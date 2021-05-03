@@ -5,8 +5,6 @@ This script changes IP via Tor and clicks ads for a certain query on Google sear
 
 ## How do I get set up?
 
-* Run the following command to setup
-
 `./ad_clicker_setup.sh`
 
 
