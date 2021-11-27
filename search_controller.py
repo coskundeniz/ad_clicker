@@ -4,8 +4,8 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from webdriver_setup import get_webdriver_for
 from time import sleep
+from webdriver_setup import get_webdriver_for
 
 from config import logger
 
@@ -15,11 +15,11 @@ class SearchController:
     URL = "https://www.google.com"
     SEARCH_INPUT = (By.NAME, "q")
 
-    def __init__(self, query):
+    def __init__(self, query, browser="firefox"):
 
         self._search_query = query
-        self._driver = get_webdriver_for("firefox")
 
+        self._driver = self._create_driver(browser)
         self._load()
 
     def search_for_ads(self):
@@ -29,7 +29,7 @@ class SearchController:
         :returns: List of (ad, ad_link) tuples
         """
 
-        logger.info(f"Starting search for {self._search_query}")
+        logger.info(f"Starting search for '{self._search_query}'")
 
         search_input_box = self._driver.find_element(*self.SEARCH_INPUT)
         search_input_box.send_keys(self._search_query, Keys.ENTER)
@@ -91,6 +91,16 @@ class SearchController:
 
         self._driver.quit()
 
+    def _create_driver(self, browser):
+
+        try:
+            driver = get_webdriver_for(browser)
+        except ValueError:
+            logger.error(f"{browser} is not installed on your system!")
+            raise SystemExit()
+
+        return driver
+
     def _load(self):
         """Load Google main page"""
 
@@ -106,12 +116,12 @@ class SearchController:
         ad_links = []
 
         try:
-            ads_container = self._driver.find_element_by_id("tads")
+            ads_container = self._driver.find_element(By.ID, "tads")
         except NoSuchElementException as exp:
             logger.debug(exp)
             return ad_links
 
-        ads = ads_container.find_elements_by_css_selector("div > a")
+        ads = ads_container.find_elements(By.CSS_SELECTOR, "div > a")
 
         for ad in ads:
             ad_text = ad.text.lower()

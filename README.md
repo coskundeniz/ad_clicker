@@ -6,10 +6,13 @@ This script changes IP via Tor and clicks ads for a certain query on Google sear
 
 ## How do I get set up?
 
+
+Run the shell script to install dependencies and setup Tor
+
 `./ad_clicker_setup.sh`
 
 
 ## How to run?
 
-`python ad_clicker.py -q <search query>`
+`python ad_clicker.py -q <search query> [-b browser]`
 

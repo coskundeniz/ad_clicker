@@ -1,6 +1,5 @@
 import os
 import getpass
-from time import sleep
 from argparse import ArgumentParser
 
 import requests
@@ -22,7 +21,6 @@ def change_ip_address(password):
     with Controller.from_port(port=9051) as controller:
         controller.authenticate(password=password)
         controller.signal(Signal.NEWNYM)
-        controller.close()
 
 
 def get_arg_parser():
@@ -33,6 +31,7 @@ def get_arg_parser():
     """
 
     arg_parser = ArgumentParser()
+    arg_parser.add_argument("-b", "--browser", default="firefox", help="Browser to use")
     arg_parser.add_argument("-q", "--query", help="Search query")
 
     return arg_parser
@@ -59,7 +58,7 @@ def main():
     response = requests.get("https://api.myip.com")
     logger.info(f"Connecting with IP: {response.json()['ip']}")
 
-    search_controller = SearchController(args.query)
+    search_controller = SearchController(args.query, args.browser)
     ads = search_controller.search_for_ads()
 
     if not ads:
