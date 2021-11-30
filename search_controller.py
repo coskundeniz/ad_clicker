@@ -8,6 +8,7 @@ from time import sleep
 from webdriver_setup import get_webdriver_for
 
 from config import logger
+from translations import contains_ad
 
 
 class SearchController:
@@ -125,7 +126,7 @@ class SearchController:
 
         for ad in ads:
             ad_text = ad.text.lower()
-            if ("reklam" in ad_text) or ("ad" in ad_text):
+            if contains_ad(ad_text):
                 logger.info("======= Found an Ad =======")
                 ad_link = ad.get_attribute("href")
                 logger.debug(f"Ad Link: {ad_link}")
