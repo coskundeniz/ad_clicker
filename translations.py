@@ -23,6 +23,7 @@ translations = (
     "oglas",                # Croatian, Slovenian
     "reklame",              # Danish
     "advertentie",          # Dutch
+    "Ad",                   # English
     "reklamo",              # Esperanto
     "reklaam",              # Estonian
     "patalastas",           # Filipino
