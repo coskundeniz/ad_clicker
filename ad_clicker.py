@@ -55,7 +55,7 @@ def main():
 
     change_ip_address(password)
 
-    response = requests.get("https://api.myip.com")
+    response = requests.get("https://api.myip.com", proxies={"https": "socks5h://127.0.0.1:9050"})
     logger.info(f"Connecting with IP: {response.json()['ip']}")
 
     search_controller = SearchController(args.query, args.browser)

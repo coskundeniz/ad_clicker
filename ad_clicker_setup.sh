@@ -16,6 +16,9 @@ echo "Installing Tor package..."
 sudo apt update
 sudo apt install -y tor
 
+echo "Installing privoxy package..."
+sudo apt install -y privoxy
+
 # create virtual environment and activate
 echo "Creating virtual environment..."
 python -m venv env
@@ -41,6 +44,10 @@ echo HashedControlPassword $(tor --hash-password "${tor_pwd}" | tail -n 1) >> /e
 
 echo "Starting Tor service..."
 service tor restart
+
+echo "Setting privoxy config..."
+echo "forward-socks5t / 127.0.0.1:9050 ." >> /etc/privoxy/config
+service privoxy start
 EOF
 
 echo "::::: Setup Completed :::::"
