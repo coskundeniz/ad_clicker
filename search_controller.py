@@ -1,6 +1,5 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import FirefoxProfile, ChromeOptions
@@ -68,11 +67,7 @@ class SearchController:
             logger.info(f"Clicking {ad_link}...")
 
             # open link in a different tab
-            actions = ActionChains(self._driver)
-            actions.key_down(Keys.CONTROL)
-            actions.click(ad_link_element)
-            actions.key_up(Keys.CONTROL)
-            actions.perform()
+            ad_link_element.send_keys(Keys.CONTROL + Keys.RETURN)
 
             for window_handle in self._driver.window_handles:
                 if window_handle != original_window_handle:
@@ -174,8 +169,13 @@ class SearchController:
 
         ads = ads_container.find_elements(By.CSS_SELECTOR, "div > a")
 
+        # clean sublinks
+        ads = [ad_link for ad_link in ads if self.URL not in ad_link.get_attribute("href")]
+
         for ad in ads:
-            ad_text = ad.text.lower()
+            ad_text_element = ad.find_element(By.CSS_SELECTOR, "div:last-child > span:first-child")
+            ad_text = ad_text_element.text.lower()
+
             if contains_ad(ad_text):
                 logger.info("======= Found an Ad =======")
                 ad_link = ad.get_attribute("href")
