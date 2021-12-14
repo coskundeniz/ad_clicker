@@ -16,9 +16,10 @@ class SearchController:
     URL = "https://www.google.com"
     SEARCH_INPUT = (By.NAME, "q")
 
-    def __init__(self, query, browser="firefox"):
+    def __init__(self, query, browser="firefox", ad_visit_time=4):
 
         self._search_query = query
+        self._ad_visit_time = ad_visit_time
 
         self._driver = self._create_driver(browser.lower())
         self._load()
@@ -72,7 +73,7 @@ class SearchController:
             for window_handle in self._driver.window_handles:
                 if window_handle != original_window_handle:
                     self._driver.switch_to.window(window_handle)
-                    sleep(4)
+                    sleep(self._ad_visit_time)
                     self._driver.close()
                     break
 

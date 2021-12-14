@@ -31,8 +31,10 @@ def get_arg_parser():
     """
 
     arg_parser = ArgumentParser()
-    arg_parser.add_argument("-b", "--browser", default="firefox", help="Browser to use")
     arg_parser.add_argument("-q", "--query", help="Search query")
+    arg_parser.add_argument("-b", "--browser", default="firefox", help="Browser to use")
+    arg_parser.add_argument("-t", "--visittime", default=4, type=int, dest="ad_visit_time",
+                            help="Number of seconds to wait on the ad page opened")
 
     return arg_parser
 
@@ -58,7 +60,7 @@ def main():
     response = requests.get("https://api.myip.com", proxies={"https": "socks5h://127.0.0.1:9050"})
     logger.info(f"Connecting with IP: {response.json()['ip']}")
 
-    search_controller = SearchController(args.query, args.browser)
+    search_controller = SearchController(args.query, args.browser, args.ad_visit_time)
     ads = search_controller.search_for_ads()
 
     if not ads:
