@@ -4,7 +4,7 @@ project_dir=$(pwd)
 
 # get password for Tor setup
 tor_pwd=""
-echo "Enter a password for tor network setup"
+echo "Enter a password for Tor network setup"
 read tor_pwd
 
 echo "Setting environment variable TOR_PWD..."
@@ -33,21 +33,25 @@ pip install -r requirements.txt
 sudo su - <<EOF
 echo "Making changes as root..."
 
-port_enabled=$(egrep "^ControlPort 9051" /etc/tor/torrc)
-if [[ -z "${port_enabled}" ]]; then
+port_enabled=$(egrep -q "^ControlPort 9051" /etc/tor/torrc)
+if [[ "${port_enabled}" ]]; then
     echo "Enabling control port..."
     echo "ControlPort 9051" >> /etc/tor/torrc
+    echo "Setting hashed Tor password..."
+    echo HashedControlPassword $(tor --hash-password "${tor_pwd}" | tail -n 1) >> /etc/tor/torrc
 fi
 
-echo "Setting hashed Tor password..."
-echo HashedControlPassword $(tor --hash-password "${tor_pwd}" | tail -n 1) >> /etc/tor/torrc
+echo "Setting privoxy config..."
+setting_exists=$(egrep -q "^forward-socks5t" /etc/privoxy/config)
+if [[ "${setting_exists}" ]]; then
+    echo "Setting privoxy port forwarding..."
+    echo "forward-socks5t / 127.0.0.1:9050 ." >> /etc/privoxy/config
+fi
 
 echo "Starting Tor service..."
 service tor restart
 
-echo "Setting privoxy config..."
-echo "forward-socks5t / 127.0.0.1:9050 ." >> /etc/privoxy/config
-service privoxy start
+service privoxy restart
 EOF
 
 echo "::::: Setup Completed :::::"

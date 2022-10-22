@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 
 LOG_FILENAME = "adclicker.log"
 
@@ -22,4 +21,3 @@ file_handler.setFormatter(formatter)
 # Add handlers to the logger
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
-
