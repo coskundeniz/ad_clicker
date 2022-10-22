@@ -34,7 +34,7 @@ sudo su - <<EOF
 echo "Making changes as root..."
 
 port_enabled=$(egrep -q "^ControlPort 9051" /etc/tor/torrc)
-if [[ "${port_enabled}" ]]; then
+if [[ ! "${port_enabled}" ]]; then
     echo "Enabling control port..."
     echo "ControlPort 9051" >> /etc/tor/torrc
     echo "Setting hashed Tor password..."
@@ -43,7 +43,7 @@ fi
 
 echo "Setting privoxy config..."
 setting_exists=$(egrep -q "^forward-socks5t" /etc/privoxy/config)
-if [[ "${setting_exists}" ]]; then
+if [[ ! "${setting_exists}" ]]; then
     echo "Setting privoxy port forwarding..."
     echo "forward-socks5t / 127.0.0.1:9050 ." >> /etc/privoxy/config
 fi
