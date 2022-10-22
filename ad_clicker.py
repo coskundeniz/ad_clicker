@@ -10,7 +10,7 @@ from config import logger
 from search_controller import SearchController
 
 
-def change_ip_address(password):
+def change_ip_address(password: str) -> None:
     """Change IP address over Tor connection
 
     :type password: str
@@ -18,12 +18,16 @@ def change_ip_address(password):
     """
 
     logger.info("Changing ip address...")
+
     with Controller.from_port(port=9051) as controller:
         controller.authenticate(password=password)
         controller.signal(Signal.NEWNYM)
 
+    response = requests.get("https://api.myip.com", proxies={"https": "socks5h://127.0.0.1:9050"})
+    logger.info(f"Connecting with IP: {response.json()['ip']}")
 
-def get_arg_parser():
+
+def get_arg_parser() -> ArgumentParser:
     """Get argument parser
 
     :rtype: ArgumentParser
@@ -33,13 +37,21 @@ def get_arg_parser():
     arg_parser = ArgumentParser()
     arg_parser.add_argument("-q", "--query", help="Search query")
     arg_parser.add_argument("-b", "--browser", default="firefox", help="Browser to use")
-    arg_parser.add_argument("-t", "--visittime", default=4, type=int, dest="ad_visit_time",
-                            help="Number of seconds to wait on the ad page opened")
+    arg_parser.add_argument(
+        "-t",
+        "--visittime",
+        default=4,
+        type=int,
+        dest="ad_visit_time",
+        help="Number of seconds to wait on the ad page opened",
+    )
+    arg_parser.add_argument("--tor", action="store_true", help="Enable using Tor network")
 
     return arg_parser
 
 
 def main():
+    """Entry point for the tool"""
 
     arg_parser = get_arg_parser()
     args = arg_parser.parse_args()
@@ -55,12 +67,10 @@ def main():
     if not password:
         password = getpass.getpass("Enter tor password: ")
 
-    change_ip_address(password)
+    if args.tor:
+        change_ip_address(password)
 
-    response = requests.get("https://api.myip.com", proxies={"https": "socks5h://127.0.0.1:9050"})
-    logger.info(f"Connecting with IP: {response.json()['ip']}")
-
-    search_controller = SearchController(args.query, args.browser, args.ad_visit_time)
+    search_controller = SearchController(args.query, args.browser, args.ad_visit_time, args.tor)
     ads = search_controller.search_for_ads()
 
     if not ads:
