@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import FirefoxProfile, ChromeOptions
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from webdriver_setup import get_webdriver_for
+import undetected_chromedriver
 
 from config import logger
 from translations import contains_ad
@@ -23,24 +23,28 @@ class SearchController:
 
     :type query: str
     :param query: Search query
-    :type browser: str
-    :param browser: Browser to use
     :type ad_visit_time: int
     :param ad_visit_time: Number of seconds to wait on the ad page
-    :type use_tor: bool
-    :param use_tor: Whether to use tor network or not
+    :type headless: bool
+    :param headless: Whether to use headless browser
     """
 
     URL = "https://www.google.com"
     SEARCH_INPUT = (By.NAME, "q")
+    RESULTS_CONTAINER = (By.ID, "result-stats")
+    COOKIE_DIALOG = (By.CSS_SELECTOR, "div[role='dialog']")
+    COOKIE_ACCEPT_BUTTON = (By.TAG_NAME, "button")
+    TOP_ADS_CONTAINER = (By.ID, "tads")
+    AD_RESULTS = (By.CSS_SELECTOR, "div > a")
+    AD_LANG_TEXT = (By.CSS_SELECTOR, "div:last-child > span:first-child")
 
-    def __init__(self, query: str, browser: str, ad_visit_time: int, use_tor: bool) -> None:
+    def __init__(self, query: str, ad_visit_time: int, headless: bool) -> None:
 
         self._search_query = query
         self._ad_visit_time = ad_visit_time
-        self._use_tor = use_tor
+        self._headless = headless
 
-        self._driver = self._create_driver(browser.lower())
+        self._driver = self._create_driver()
         self._load()
 
     def search_for_ads(self):
@@ -59,7 +63,7 @@ class SearchController:
 
         try:
             wait = WebDriverWait(self._driver, timeout=10)
-            results_loaded = wait.until(EC.presence_of_element_located((By.ID, "result-stats")))
+            results_loaded = wait.until(EC.presence_of_element_located(self.RESULTS_CONTAINER))
 
             if results_loaded:
                 logger.info("Getting ad links...")
@@ -74,7 +78,7 @@ class SearchController:
     def click_ads(self, ads: AdList) -> None:
         """Click ads found
 
-        :type ads: list
+        :type ads: AdList
         :param ads: List of (ad, ad_link) tuples
         """
 
@@ -104,68 +108,34 @@ class SearchController:
             self._driver.execute_script("arguments[0].scrollIntoView(true);", ad_link_element)
 
     def end_search(self) -> None:
-        """Close the browser"""
+        """Close the browsers"""
 
-        self._driver.quit()
+        if self._driver:
+            # delete all cookies before quitting
+            self._driver.delete_all_cookies()
+            self._driver.quit()
 
-    def _create_driver(self, browser: str) -> selenium.webdriver:
-        """Create Selenium webdriver instance for the given browser
+    def _create_driver(self) -> selenium.webdriver:
+        """Create Selenium Chrome webdriver instance
 
-        Setup proxy if the browser is Firefox or Chrome
-
-        :type browser: str
-        :param browser: Browser name
         :rtype: selenium.webdriver
         :returns: Selenium webdriver instance
         """
 
-        try:
-            proxy = self._setup_proxy(browser) if self._use_tor else None
+        chrome_options = ChromeOptions()
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-infobars")
+        chrome_options.add_argument("--disable-popup-blocking")
+        chrome_options.add_argument("--disable-notifications")
+        chrome_options.add_argument("--start-maximized")
 
-            if browser == "firefox":
-                driver = get_webdriver_for(browser, firefox_profile=proxy)
-            elif browser == "chrome":
-                driver = get_webdriver_for(browser, chrome_options=proxy)
-            else:
-                driver = get_webdriver_for(browser)
+        if self._headless:
+            chrome_options.add_argument("--window-size=1920,1080")
 
-        except ValueError:
-            logger.error(f"{browser} is not installed on your system!")
-            raise SystemExit()
+        driver = undetected_chromedriver.Chrome(options=chrome_options, headless=self._headless)
 
         return driver
-
-    def _setup_proxy(self, browser: str) -> ProxySetup:
-        """Setup proxy for Firefox or Chrome
-
-        :type browser: str
-        :param browser: Browser name
-        :rtype: ChromeOptions or FirefoxProfile
-        :returns: Proxy settings
-        """
-
-        host = "127.0.0.1"
-        port = "9050"
-
-        if browser == "firefox":
-            firefox_profile = FirefoxProfile()
-            # Direct = 0, Manual = 1, PAC = 2, AUTODETECT = 4, SYSTEM = 5
-            firefox_profile.set_preference("network.proxy.type", 1)
-            firefox_profile.set_preference("network.proxy.socks", host)
-            firefox_profile.set_preference("network.proxy.socks_port", int(port))
-            firefox_profile.update_preferences()
-
-            return firefox_profile
-
-        elif browser == "chrome":
-            proxy = f"socks5://{host}:{port}"
-            chrome_options = ChromeOptions()
-            chrome_options.add_argument(f"--proxy-server={proxy}")
-
-            return chrome_options
-
-        else:
-            logger.info(f"No proxy setting was done for {browser}")
 
     def _load(self) -> None:
         """Load Google main page"""
@@ -175,25 +145,25 @@ class SearchController:
     def _get_ad_links(self) -> AdList:
         """Extract ad links to click
 
-        :rtype: list
+        :rtype: AdList
         :returns: List of (ad, ad_link) tuples
         """
 
         ad_links = []
 
         try:
-            ads_container = self._driver.find_element(By.ID, "tads")
+            ads_container = self._driver.find_element(*self.TOP_ADS_CONTAINER)
         except NoSuchElementException as exp:
             logger.debug(exp)
             return ad_links
 
-        ads = ads_container.find_elements(By.CSS_SELECTOR, "div > a")
+        ads = ads_container.find_elements(*self.AD_RESULTS)
 
         # clean sublinks
         ads = [ad_link for ad_link in ads if ad_link.get_attribute("data-pcu")]
 
         for ad in ads:
-            ad_text_element = ad.find_element(By.CSS_SELECTOR, "div:last-child > span:first-child")
+            ad_text_element = ad.find_element(*self.AD_LANG_TEXT)
             ad_text = ad_text_element.text.lower()
 
             if contains_ad(ad_text):

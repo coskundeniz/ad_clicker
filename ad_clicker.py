@@ -1,30 +1,7 @@
-import os
-import getpass
 from argparse import ArgumentParser
-
-import requests
-from stem import Signal
-from stem.control import Controller
 
 from config import logger
 from search_controller import SearchController
-
-
-def change_ip_address(password: str) -> None:
-    """Change IP address over Tor connection
-
-    :type password: str
-    :param password: Tor authentication password
-    """
-
-    logger.info("Changing ip address...")
-
-    with Controller.from_port(port=9051) as controller:
-        controller.authenticate(password=password)
-        controller.signal(Signal.NEWNYM)
-
-    response = requests.get("https://api.myip.com", proxies={"https": "socks5h://127.0.0.1:9050"})
-    logger.info(f"Connecting with IP: {response.json()['ip']}")
 
 
 def get_arg_parser() -> ArgumentParser:
@@ -36,7 +13,6 @@ def get_arg_parser() -> ArgumentParser:
 
     arg_parser = ArgumentParser()
     arg_parser.add_argument("-q", "--query", help="Search query")
-    arg_parser.add_argument("-b", "--browser", default="firefox", help="Browser to use")
     arg_parser.add_argument(
         "-t",
         "--visittime",
@@ -45,7 +21,7 @@ def get_arg_parser() -> ArgumentParser:
         dest="ad_visit_time",
         help="Number of seconds to wait on the ad page opened",
     )
-    arg_parser.add_argument("--tor", action="store_true", help="Enable using Tor network")
+    arg_parser.add_argument("--headless", action="store_true", help="Use headless browser")
 
     return arg_parser
 
@@ -61,16 +37,7 @@ def main():
         arg_parser.print_help()
         raise SystemExit()
 
-    os.environ["WDM_LOG_LEVEL"] = "0"
-    password = os.environ.get("TOR_PWD", None)
-
-    if not password:
-        password = getpass.getpass("Enter tor password: ")
-
-    if args.tor:
-        change_ip_address(password)
-
-    search_controller = SearchController(args.query, args.browser, args.ad_visit_time, args.tor)
+    search_controller = SearchController(args.query, args.ad_visit_time, args.headless)
     ads = search_controller.search_for_ads()
 
     if not ads:
