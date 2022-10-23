@@ -7,8 +7,13 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import FirefoxProfile, ChromeOptions
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchElementException,
+    ElementNotInteractableException,
+)
 from webdriver_setup import get_webdriver_for
+
 
 from config import logger
 from translations import contains_ad
@@ -33,6 +38,12 @@ class SearchController:
 
     URL = "https://www.google.com"
     SEARCH_INPUT = (By.NAME, "q")
+    RESULTS_CONTAINER = (By.ID, "result-stats")
+    COOKIE_DIALOG = (By.CSS_SELECTOR, "div[role='dialog']")
+    COOKIE_ACCEPT_BUTTON = (By.TAG_NAME, "button")
+    TOP_ADS_CONTAINER = (By.ID, "tads")
+    AD_RESULTS = (By.CSS_SELECTOR, "div > a")
+    AD_LANG_TEXT = (By.CSS_SELECTOR, "div:last-child > span:first-child")
 
     def __init__(self, query: str, browser: str, ad_visit_time: int, use_tor: bool) -> None:
 
@@ -52,6 +63,8 @@ class SearchController:
 
         logger.info(f"Starting search for '{self._search_query}'")
 
+        self._close_cookie_dialog()
+
         search_input_box = self._driver.find_element(*self.SEARCH_INPUT)
         search_input_box.send_keys(self._search_query, Keys.ENTER)
 
@@ -59,7 +72,7 @@ class SearchController:
 
         try:
             wait = WebDriverWait(self._driver, timeout=10)
-            results_loaded = wait.until(EC.presence_of_element_located((By.ID, "result-stats")))
+            results_loaded = wait.until(EC.presence_of_element_located(self.RESULTS_CONTAINER))
 
             if results_loaded:
                 logger.info("Getting ad links...")
@@ -74,7 +87,7 @@ class SearchController:
     def click_ads(self, ads: AdList) -> None:
         """Click ads found
 
-        :type ads: list
+        :type ads: AdList
         :param ads: List of (ad, ad_link) tuples
         """
 
@@ -104,9 +117,12 @@ class SearchController:
             self._driver.execute_script("arguments[0].scrollIntoView(true);", ad_link_element)
 
     def end_search(self) -> None:
-        """Close the browser"""
+        """Close the browsers"""
 
-        self._driver.quit()
+        if self._driver:
+            # delete all cookies before quitting
+            self._driver.delete_all_cookies()
+            self._driver.quit()
 
     def _create_driver(self, browser: str) -> selenium.webdriver:
         """Create Selenium webdriver instance for the given browser
@@ -170,30 +186,31 @@ class SearchController:
     def _load(self) -> None:
         """Load Google main page"""
 
+        self._driver.maximize_window()
         self._driver.get(self.URL)
 
     def _get_ad_links(self) -> AdList:
         """Extract ad links to click
 
-        :rtype: list
+        :rtype: AdList
         :returns: List of (ad, ad_link) tuples
         """
 
         ad_links = []
 
         try:
-            ads_container = self._driver.find_element(By.ID, "tads")
+            ads_container = self._driver.find_element(*self.TOP_ADS_CONTAINER)
         except NoSuchElementException as exp:
             logger.debug(exp)
             return ad_links
 
-        ads = ads_container.find_elements(By.CSS_SELECTOR, "div > a")
+        ads = ads_container.find_elements(*self.AD_RESULTS)
 
         # clean sublinks
         ads = [ad_link for ad_link in ads if ad_link.get_attribute("data-pcu")]
 
         for ad in ads:
-            ad_text_element = ad.find_element(By.CSS_SELECTOR, "div:last-child > span:first-child")
+            ad_text_element = ad.find_element(*self.AD_LANG_TEXT)
             ad_text = ad_text_element.text.lower()
 
             if contains_ad(ad_text):
@@ -203,3 +220,15 @@ class SearchController:
                 ad_links.append((ad, ad_link))
 
         return ad_links
+
+    def _close_cookie_dialog(self) -> None:
+        """If cookie dialog is opened, close it by accepting"""
+
+        try:
+            cookie_dialog = self._driver.find_element(*self.COOKIE_DIALOG)
+            accept_button = cookie_dialog.find_elements(*self.COOKIE_ACCEPT_BUTTON)[-2]
+            accept_button.click()
+            sleep(1)
+
+        except (NoSuchElementException, ElementNotInteractableException):
+            pass
