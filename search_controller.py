@@ -1,20 +1,27 @@
+import random
 from time import sleep
-from typing import Optional, Union
+from typing import Optional
 
 import selenium
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.proxy import Proxy, ProxyType
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver import FirefoxProfile, ChromeOptions
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver import ChromeOptions
+from selenium.webdriver import DesiredCapabilities
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchElementException,
+    ElementNotInteractableException,
+)
 import undetected_chromedriver
 
 from config import logger
 from translations import contains_ad
+from utils import get_random_user_agent_string, get_location
 
 
-ProxySetup = Optional[Union[ChromeOptions, FirefoxProfile]]
 AdList = list[tuple[selenium.webdriver.remote.webelement.WebElement, str]]
 
 
@@ -27,6 +34,8 @@ class SearchController:
     :param ad_visit_time: Number of seconds to wait on the ad page
     :type headless: bool
     :param headless: Whether to use headless browser
+    :type proxy: str
+    :param proxy: Proxy to use in ip:port format
     """
 
     URL = "https://www.google.com"
@@ -35,14 +44,22 @@ class SearchController:
     COOKIE_DIALOG = (By.CSS_SELECTOR, "div[role='dialog']")
     COOKIE_ACCEPT_BUTTON = (By.TAG_NAME, "button")
     TOP_ADS_CONTAINER = (By.ID, "tads")
+    BOTTOM_ADS_CONTAINER = (By.ID, "tadsb")
     AD_RESULTS = (By.CSS_SELECTOR, "div > a")
     AD_LANG_TEXT = (By.CSS_SELECTOR, "div:last-child > span:first-child")
 
-    def __init__(self, query: str, ad_visit_time: int, headless: bool) -> None:
+    def __init__(
+        self,
+        query: str,
+        ad_visit_time: int,
+        headless: bool,
+        proxy: Optional[str] = None,
+    ) -> None:
 
         self._search_query = query
         self._ad_visit_time = ad_visit_time
         self._headless = headless
+        self._proxy = proxy
 
         self._driver = self._create_driver()
         self._load()
@@ -56,8 +73,14 @@ class SearchController:
 
         logger.info(f"Starting search for '{self._search_query}'")
 
+        self._close_cookie_dialog()
+
         search_input_box = self._driver.find_element(*self.SEARCH_INPUT)
         search_input_box.send_keys(self._search_query, Keys.ENTER)
+
+        # sleep after entering search keyword by randomly selected amount
+        # between 0.5 and 3 seconds
+        sleep(random.choice([0.5, 3, 1, 1.5, 2, 2.5]))
 
         ad_links = []
 
@@ -122,18 +145,48 @@ class SearchController:
         :returns: Selenium webdriver instance
         """
 
+        user_agent_str = get_random_user_agent_string()
+
         chrome_options = ChromeOptions()
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-infobars")
         chrome_options.add_argument("--disable-popup-blocking")
         chrome_options.add_argument("--disable-notifications")
+        chrome_options.add_argument("--ignore-ssl-errors")
         chrome_options.add_argument("--start-maximized")
+        chrome_options.add_argument(f"--user-agent={user_agent_str}")
 
         if self._headless:
+            chrome_options.add_argument("--no-sandbox")
             chrome_options.add_argument("--window-size=1920,1080")
 
-        driver = undetected_chromedriver.Chrome(options=chrome_options, headless=self._headless)
+        if self._proxy:
+
+            proxy_config = Proxy()
+            proxy_config.proxy_type = ProxyType.MANUAL
+            proxy_config.auto_detect = False
+            proxy_config.http_proxy = self._proxy
+            proxy_config.ssl_proxy = self._proxy
+
+            capabilities = DesiredCapabilities.CHROME.copy()
+            proxy_config.add_to_capabilities(capabilities)
+
+            driver = undetected_chromedriver.Chrome(
+                options=chrome_options, headless=self._headless, desired_capabilities=capabilities
+            )
+
+            # set geolocation of the browser according to IP address
+            accuracy = 90
+            lat, long = get_location(self._proxy.split(":")[0])
+
+            driver.execute_cdp_cmd(
+                "Emulation.setGeolocationOverride",
+                {"latitude": lat, "longitude": long, "accuracy": accuracy},
+            )
+
+        else:
+            driver = undetected_chromedriver.Chrome(options=chrome_options, headless=self._headless)
 
         return driver
 
@@ -149,18 +202,32 @@ class SearchController:
         :returns: List of (ad, ad_link) tuples
         """
 
-        ad_links = []
+        ads = []
+        empty_ads_container = 0
 
         try:
             ads_container = self._driver.find_element(*self.TOP_ADS_CONTAINER)
+            ads = ads_container.find_elements(*self.AD_RESULTS)
+
         except NoSuchElementException as exp:
             logger.debug(exp)
-            return ad_links
+            empty_ads_container += 1
 
-        ads = ads_container.find_elements(*self.AD_RESULTS)
+        try:
+            bottom_ads_container = self._driver.find_element(*self.BOTTOM_ADS_CONTAINER)
+            ads.extend(bottom_ads_container.find_elements(*self.AD_RESULTS))
+
+        except NoSuchElementException as exp:
+            logger.debug(exp)
+            empty_ads_container += 1
+
+        if empty_ads_container == 2:
+            return []
 
         # clean sublinks
         ads = [ad_link for ad_link in ads if ad_link.get_attribute("data-pcu")]
+
+        ad_links = []
 
         for ad in ads:
             ad_text_element = ad.find_element(*self.AD_LANG_TEXT)
@@ -173,3 +240,15 @@ class SearchController:
                 ad_links.append((ad, ad_link))
 
         return ad_links
+
+    def _close_cookie_dialog(self) -> None:
+        """If cookie dialog is opened, close it by accepting"""
+
+        try:
+            cookie_dialog = self._driver.find_element(*self.COOKIE_DIALOG)
+            accept_button = cookie_dialog.find_elements(*self.COOKIE_ACCEPT_BUTTON)[-2]
+            accept_button.click()
+            sleep(1)
+
+        except (NoSuchElementException, ElementNotInteractableException, IndexError):
+            pass

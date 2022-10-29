@@ -4,6 +4,8 @@ This command-line tool clicks ads for a certain query on Google search using [un
 
 Old version of the tool can be found in the `old_version` branch.
 
+Supports Python 3.9+
+
 [Related post on Medium](https://python.plainenglish.io/google-ads-clicker-with-python-selenium-and-tor-a6ff8078da2a)
 
 ## How do I get set up?
@@ -18,16 +20,18 @@ Run the following commands to install required packages.
 ## How to run?
 
 ```
-usage: python ad_clicker.py [-h] [-q QUERY] [-t AD_VISIT_TIME] [--headless]
+usage: python ad_clicker.py [-h] [-q QUERY] [-t AD_VISIT_TIME] [--headless] [-p PROXY] [-pf PROXY_FILE]
 
 optional arguments:
   -h, --help                                   show this help message and exit
   -q QUERY, --query QUERY                      Search query
   -t AD_VISIT_TIME, --visittime AD_VISIT_TIME  Number of seconds to wait on the ad page opened
   --headless                                   Use headless browser
+  -p PROXY, --proxy PROXY                      Use the given proxy in ip:port format
+  -pf PROXY_FILE, --proxy_file PROXY_FILE      Select a proxy from the given file
 ```
 
-`python ad_clicker.py -q <search query> [-t ad_visit_time_in_seconds] [--headless]`
+`python ad_clicker.py -q <search query> [-t ad_visit_time_in_seconds] [--headless] [-p PROXY] [-pf PROXY_FILE]`
 
 
 ### Examples
@@ -43,3 +47,19 @@ optional arguments:
 * Search for "wireless keyboard" using headless browser.
 
     * `python ad_clicker.py -q "wireless keyboard" --headless`
+
+* Search for "wireless keyboard" using the given proxy.
+
+    * `python ad_clicker.py -q "wireless keyboard" -p 123.45.67.89:1923`
+
+* Search for "wireless keyboard" using a proxy from the given file.
+
+    * `python ad_clicker.py -q "wireless keyboard" -pf ~/proxies.txt`
+
+---
+
+## Support
+
+If you benefit from this tool, please consider donating using the sponsor links.
+
+If you want more customized solutions, please contact via email.
