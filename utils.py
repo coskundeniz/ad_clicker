@@ -1,5 +1,6 @@
 import re
 import random
+import subprocess
 from time import sleep
 
 import requests
@@ -90,17 +91,48 @@ def get_location(ip_address: str) -> tuple[float, float]:
 
     retry_count = 0
 
-    while retry_count < 10:
+    while retry_count < 5:
 
-        response = requests.get(f"https://geolocation-db.com/json/{ip_address}", timeout=3).json()
+        try:
+            response = requests.get(f"https://ipapi.co/{ip_address}/json/", timeout=2).json()
+            latitude, longitude = response.get("latitude"), response.get("longitude")
 
-        latitude, longitude = response.get("latitude"), response.get("longitude")
+            if not (latitude or longitude):
+                # try a different api
+                response = requests.get(
+                    f"https://geolocation-db.com/json/{ip_address}", timeout=2
+                ).json()
+                latitude, longitude = response.get("latitude"), response.get("longitude")
 
-        if latitude and longitude:
-            logger.debug(f"Latitude and longitude for {ip_address}: ({latitude}, {longitude})")
-            return latitude, longitude
+            if latitude and longitude:
+                logger.debug(f"Latitude and longitude for {ip_address}: ({latitude}, {longitude})")
+                return latitude, longitude
+
+        except requests.RequestException as exp:
+            logger.error(exp)
 
         logger.error("Couldn't find latitude and longitude! Retrying after a second...")
-
         retry_count += 1
         sleep(1)
+
+
+def get_installed_chrome_version() -> int:
+    """Get major version for the Chrome installed on the system
+
+    :rtype: int
+    :returns: Chrome major version
+    """
+
+    major_version = None
+
+    try:
+        result = subprocess.run(["google-chrome", "--version"], capture_output=True)
+
+        major_version = int(str(result.stdout).split(" ")[-2].split(".")[0])
+
+        logger.debug(f"Installed Chrome version: {major_version}")
+
+    except subprocess.SubprocessError:
+        logger.error("Failed to get Chrome version! Latest version will be used.")
+
+    return major_version

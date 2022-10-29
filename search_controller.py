@@ -19,7 +19,7 @@ import undetected_chromedriver
 
 from config import logger
 from translations import contains_ad
-from utils import get_random_user_agent_string, get_location
+from utils import get_random_user_agent_string, get_location, get_installed_chrome_version
 
 
 AdList = list[tuple[selenium.webdriver.remote.webelement.WebElement, str]]
@@ -161,6 +161,8 @@ class SearchController:
             chrome_options.add_argument("--no-sandbox")
             chrome_options.add_argument("--window-size=1920,1080")
 
+        chrome_version = get_installed_chrome_version()
+
         if self._proxy:
 
             proxy_config = Proxy()
@@ -173,7 +175,10 @@ class SearchController:
             proxy_config.add_to_capabilities(capabilities)
 
             driver = undetected_chromedriver.Chrome(
-                options=chrome_options, headless=self._headless, desired_capabilities=capabilities
+                version_main=chrome_version,
+                options=chrome_options,
+                headless=self._headless,
+                desired_capabilities=capabilities,
             )
 
             # set geolocation of the browser according to IP address
@@ -186,7 +191,9 @@ class SearchController:
             )
 
         else:
-            driver = undetected_chromedriver.Chrome(options=chrome_options, headless=self._headless)
+            driver = undetected_chromedriver.Chrome(
+                version_main=chrome_version, options=chrome_options, headless=self._headless
+            )
 
         return driver
 
