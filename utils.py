@@ -104,6 +104,9 @@ def get_location(ip_address: str) -> tuple[float, float]:
                 ).json()
                 latitude, longitude = response.get("latitude"), response.get("longitude")
 
+                if latitude == "Not found":
+                    latitude = longitude = None
+
             if latitude and longitude:
                 logger.debug(f"Latitude and longitude for {ip_address}: ({latitude}, {longitude})")
                 return latitude, longitude
