@@ -24,11 +24,22 @@ def get_arg_parser() -> ArgumentParser:
         help="Number of seconds to wait on the ad page opened",
     )
     arg_parser.add_argument("--headless", action="store_true", help="Use headless browser")
-    arg_parser.add_argument("-p", "--proxy", help="Use the given proxy in ip:port format")
+    arg_parser.add_argument(
+        "-p",
+        "--proxy",
+        help="""Use the given proxy in "ip:port" or "username:password@host:port" format""",
+    )
     arg_parser.add_argument(
         "-pf",
         "--proxy_file",
         help="Select a proxy from the given file",
+    )
+    arg_parser.add_argument(
+        "--auth",
+        action="store_true",
+        help="""Use proxy with username and password.
+        If this is passed, proxy parameter should be in "username:password@host:port" format
+        """,
     )
 
     return arg_parser
@@ -56,7 +67,9 @@ def main():
     else:
         proxy = None
 
-    search_controller = SearchController(args.query, args.ad_visit_time, args.headless, proxy)
+    search_controller = SearchController(
+        args.query, args.ad_visit_time, args.headless, proxy, args.auth
+    )
     ads = search_controller.search_for_ads()
 
     if not ads:

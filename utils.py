@@ -2,6 +2,7 @@ import re
 import random
 import subprocess
 from time import sleep
+from typing import Optional
 
 import requests
 from random_user_agent.user_agent import UserAgent
@@ -80,14 +81,28 @@ def get_random_user_agent_string() -> str:
     return user_agent_string
 
 
-def get_location(ip_address: str) -> tuple[float, float]:
+def get_location(proxy: str, auth: Optional[bool] = False) -> tuple[float, float]:
     """Get latitude and longitude of ip address
 
-    :type ip_address: str
-    :param ip_address: IP address to get geolocation
+    :type proxy: str
+    :param proxy: Proxy to get geolocation
+    :type auth: bool
+    :param auth: Whether authentication is used or not for proxy
     :rtype: tuple
-    :returns: (latitude, longitude) pair for the given IP
+    :returns: (latitude, longitude) pair for the given proxy IP
     """
+
+    if auth:
+        response = requests.get(
+            "https://ipv4.webshare.io/",
+            proxies={"http": f"http://{proxy}", "https": f"http://{proxy}"},
+        )
+
+        ip_address = response.text
+
+        logger.info(f"Connecting with IP: {ip_address}")
+    else:
+        ip_address = proxy.split(":")[0]
 
     retry_count = 0
 

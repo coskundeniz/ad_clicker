@@ -18,6 +18,7 @@ from selenium.common.exceptions import (
 import undetected_chromedriver
 
 from config import logger
+from proxy import install_plugin
 from translations import contains_ad
 from utils import get_random_user_agent_string, get_location, get_installed_chrome_version
 
@@ -36,9 +37,12 @@ class SearchController:
     :param headless: Whether to use headless browser
     :type proxy: str
     :param proxy: Proxy to use in ip:port format
+    :type auth: bool
+    :param auth: Whether authentication is used or not for proxy
     """
 
     URL = "https://www.google.com"
+
     SEARCH_INPUT = (By.NAME, "q")
     RESULTS_CONTAINER = (By.ID, "result-stats")
     COOKIE_DIALOG = (By.CSS_SELECTOR, "div[role='dialog']")
@@ -54,12 +58,14 @@ class SearchController:
         ad_visit_time: int,
         headless: bool,
         proxy: Optional[str] = None,
+        auth: Optional[bool] = False,
     ) -> None:
 
         self._search_query = query
         self._ad_visit_time = ad_visit_time
         self._headless = headless
         self._proxy = proxy
+        self._auth = auth
 
         self._driver = self._create_driver()
         self._load()
@@ -165,25 +171,40 @@ class SearchController:
 
         if self._proxy:
 
-            proxy_config = Proxy()
-            proxy_config.proxy_type = ProxyType.MANUAL
-            proxy_config.auto_detect = False
-            proxy_config.http_proxy = self._proxy
-            proxy_config.ssl_proxy = self._proxy
+            logger.info(f"Using proxy: {self._proxy}")
 
-            capabilities = DesiredCapabilities.CHROME.copy()
-            proxy_config.add_to_capabilities(capabilities)
+            if self._auth:
+
+                if "@" not in self._proxy or self._proxy.count(":") != 2:
+                    raise ValueError(
+                        "Invalid proxy format! Should be in 'username:password@host:port' format"
+                    )
+
+                username, password = self._proxy.split("@")[0].split(":")
+                host, port = self._proxy.split("@")[1].split(":")
+
+                install_plugin(chrome_options, host, port, username, password)
+
+            else:
+                proxy_config = Proxy()
+                proxy_config.proxy_type = ProxyType.MANUAL
+                proxy_config.auto_detect = False
+                proxy_config.http_proxy = self._proxy
+                proxy_config.ssl_proxy = self._proxy
+
+                capabilities = DesiredCapabilities.CHROME.copy()
+                proxy_config.add_to_capabilities(capabilities)
 
             driver = undetected_chromedriver.Chrome(
                 version_main=chrome_version,
                 options=chrome_options,
                 headless=self._headless,
-                desired_capabilities=capabilities,
+                desired_capabilities=capabilities if not self._auth else None,
             )
 
             # set geolocation of the browser according to IP address
             accuracy = 90
-            lat, long = get_location(self._proxy.split(":")[0])
+            lat, long = get_location(self._proxy, self._auth)
 
             driver.execute_cdp_cmd(
                 "Emulation.setGeolocationOverride",

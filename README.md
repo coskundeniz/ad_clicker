@@ -8,7 +8,7 @@ Supports Python 3.9+
 
 [Related post on Medium](https://python.plainenglish.io/google-ads-clicker-with-python-selenium-and-tor-a6ff8078da2a)
 
-## How do I get set up?
+## How to setup
 
 Run the following commands to install required packages.
 
@@ -17,7 +17,7 @@ Run the following commands to install required packages.
 * `pip install -r requirements.txt`
 
 
-## How to run?
+## How to run
 
 ```
 usage: python ad_clicker.py [-h] [-q QUERY] [-t AD_VISIT_TIME] [--headless] [-p PROXY] [-pf PROXY_FILE]
@@ -29,9 +29,11 @@ optional arguments:
   --headless                                   Use headless browser
   -p PROXY, --proxy PROXY                      Use the given proxy in ip:port format
   -pf PROXY_FILE, --proxy_file PROXY_FILE      Select a proxy from the given file
+  --auth                                       Use proxy with username and password. If this is passed,
+                                               proxy parameter should be in "username:password@host:port" format
 ```
 
-`python ad_clicker.py -q <search query> [-t ad_visit_time_in_seconds] [--headless] [-p PROXY] [-pf PROXY_FILE]`
+`python ad_clicker.py -q <search query> [-t ad_visit_time_in_seconds] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth]`
 
 
 ### Examples
@@ -48,9 +50,13 @@ optional arguments:
 
     * `python ad_clicker.py -q "wireless keyboard" --headless`
 
-* Search for "wireless keyboard" using the given proxy.
+* Search for "wireless keyboard" using the given proxy without authentication.
 
-    * `python ad_clicker.py -q "wireless keyboard" -p 123.45.67.89:1923`
+    * `python ad_clicker.py -q "wireless keyboard" -p host:port`
+
+* Search for "wireless keyboard" using the given proxy with authentication.
+
+    * `python ad_clicker.py -q "wireless keyboard" --auth -p username:password@host:port`
 
 * Search for "wireless keyboard" using a proxy from the given file.
 
