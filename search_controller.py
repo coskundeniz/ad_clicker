@@ -1,26 +1,19 @@
 import random
 from time import sleep
-from typing import Optional
 
 import selenium
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.proxy import Proxy, ProxyType
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver import ChromeOptions
-from selenium.webdriver import DesiredCapabilities
 from selenium.common.exceptions import (
     TimeoutException,
     NoSuchElementException,
     ElementNotInteractableException,
 )
-import undetected_chromedriver
 
 from config import logger
-from proxy import install_plugin
 from translations import contains_ad
-from utils import get_random_user_agent_string, get_location, get_installed_chrome_version
 
 
 AdList = list[tuple[selenium.webdriver.remote.webelement.WebElement, str]]
@@ -29,16 +22,12 @@ AdList = list[tuple[selenium.webdriver.remote.webelement.WebElement, str]]
 class SearchController:
     """Search controller for ad clicker
 
+    :type driver: selenium.webdriver
+    :param driver: Selenium Chrome webdriver instance
     :type query: str
     :param query: Search query
     :type ad_visit_time: int
     :param ad_visit_time: Number of seconds to wait on the ad page
-    :type headless: bool
-    :param headless: Whether to use headless browser
-    :type proxy: str
-    :param proxy: Proxy to use in ip:port format
-    :type auth: bool
-    :param auth: Whether authentication is used or not for proxy
     """
 
     URL = "https://www.google.com"
@@ -52,22 +41,12 @@ class SearchController:
     AD_RESULTS = (By.CSS_SELECTOR, "div > a")
     AD_LANG_TEXT = (By.CSS_SELECTOR, "div:last-child > span:first-child")
 
-    def __init__(
-        self,
-        query: str,
-        ad_visit_time: int,
-        headless: bool,
-        proxy: Optional[str] = None,
-        auth: Optional[bool] = False,
-    ) -> None:
+    def __init__(self, driver: selenium.webdriver, query: str, ad_visit_time: int) -> None:
 
+        self._driver = driver
         self._search_query = query
         self._ad_visit_time = ad_visit_time
-        self._headless = headless
-        self._proxy = proxy
-        self._auth = auth
 
-        self._driver = self._create_driver()
         self._load()
 
     def search_for_ads(self):
@@ -143,80 +122,6 @@ class SearchController:
             # delete all cookies before quitting
             self._driver.delete_all_cookies()
             self._driver.quit()
-
-    def _create_driver(self) -> selenium.webdriver:
-        """Create Selenium Chrome webdriver instance
-
-        :rtype: selenium.webdriver
-        :returns: Selenium webdriver instance
-        """
-
-        user_agent_str = get_random_user_agent_string()
-
-        chrome_options = ChromeOptions()
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-infobars")
-        chrome_options.add_argument("--disable-popup-blocking")
-        chrome_options.add_argument("--disable-notifications")
-        chrome_options.add_argument("--ignore-ssl-errors")
-        chrome_options.add_argument("--start-maximized")
-        chrome_options.add_argument(f"--user-agent={user_agent_str}")
-
-        if self._headless:
-            chrome_options.add_argument("--no-sandbox")
-            chrome_options.add_argument("--window-size=1920,1080")
-
-        chrome_version = get_installed_chrome_version()
-
-        if self._proxy:
-
-            logger.info(f"Using proxy: {self._proxy}")
-
-            if self._auth:
-
-                if "@" not in self._proxy or self._proxy.count(":") != 2:
-                    raise ValueError(
-                        "Invalid proxy format! Should be in 'username:password@host:port' format"
-                    )
-
-                username, password = self._proxy.split("@")[0].split(":")
-                host, port = self._proxy.split("@")[1].split(":")
-
-                install_plugin(chrome_options, host, port, username, password)
-
-            else:
-                proxy_config = Proxy()
-                proxy_config.proxy_type = ProxyType.MANUAL
-                proxy_config.auto_detect = False
-                proxy_config.http_proxy = self._proxy
-                proxy_config.ssl_proxy = self._proxy
-
-                capabilities = DesiredCapabilities.CHROME.copy()
-                proxy_config.add_to_capabilities(capabilities)
-
-            driver = undetected_chromedriver.Chrome(
-                version_main=chrome_version,
-                options=chrome_options,
-                headless=self._headless,
-                desired_capabilities=capabilities if not self._auth else None,
-            )
-
-            # set geolocation of the browser according to IP address
-            accuracy = 90
-            lat, long = get_location(self._proxy, self._auth)
-
-            driver.execute_cdp_cmd(
-                "Emulation.setGeolocationOverride",
-                {"latitude": lat, "longitude": long, "accuracy": accuracy},
-            )
-
-        else:
-            driver = undetected_chromedriver.Chrome(
-                version_main=chrome_version, options=chrome_options, headless=self._headless
-            )
-
-        return driver
 
     def _load(self) -> None:
         """Load Google main page"""

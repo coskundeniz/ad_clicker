@@ -7,8 +7,13 @@ from typing import Optional
 import requests
 from random_user_agent.user_agent import UserAgent
 from random_user_agent.params import SoftwareName, OperatingSystem, Popularity, SoftwareType
+from selenium.webdriver.common.proxy import Proxy, ProxyType
+from selenium.webdriver import ChromeOptions
+from selenium.webdriver import DesiredCapabilities
+import undetected_chromedriver
 
 from config import logger
+from proxy import install_plugin
 
 
 USER_AGENTS = [
@@ -154,3 +159,84 @@ def get_installed_chrome_version() -> int:
         logger.error("Failed to get Chrome version! Latest version will be used.")
 
     return major_version
+
+
+def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chromedriver.Chrome:
+    """Create Selenium Chrome webdriver instance
+
+    :type proxy: str
+    :param proxy: Proxy to use in ip:port or user:pass@host:port format
+    :type auth: bool
+    :param auth: Whether authentication is used or not for proxy
+    :type headless: bool
+    :param headless: Whether to use headless browser
+    :rtype: undetected_chromedriver.Chrome
+    :returns: Selenium Chrome webdriver instance
+    """
+
+    user_agent_str = get_random_user_agent_string()
+
+    chrome_options = ChromeOptions()
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-infobars")
+    chrome_options.add_argument("--disable-popup-blocking")
+    chrome_options.add_argument("--disable-notifications")
+    chrome_options.add_argument("--ignore-ssl-errors")
+    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument(f"--user-agent={user_agent_str}")
+
+    if headless:
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--window-size=1920,1080")
+
+    chrome_version = get_installed_chrome_version()
+
+    if proxy:
+
+        logger.info(f"Using proxy: {proxy}")
+
+        if auth:
+
+            if "@" not in proxy or proxy.count(":") != 2:
+                raise ValueError(
+                    "Invalid proxy format! Should be in 'username:password@host:port' format"
+                )
+
+            username, password = proxy.split("@")[0].split(":")
+            host, port = proxy.split("@")[1].split(":")
+
+            install_plugin(chrome_options, host, port, username, password)
+
+        else:
+            proxy_config = Proxy()
+            proxy_config.proxy_type = ProxyType.MANUAL
+            proxy_config.auto_detect = False
+            proxy_config.http_proxy = proxy
+            proxy_config.ssl_proxy = proxy
+
+            capabilities = DesiredCapabilities.CHROME.copy()
+            proxy_config.add_to_capabilities(capabilities)
+
+        driver = undetected_chromedriver.Chrome(
+            version_main=chrome_version,
+            options=chrome_options,
+            headless=headless,
+            desired_capabilities=capabilities if not auth else None,
+        )
+
+        # set geolocation of the browser according to IP address
+        accuracy = 90
+        lat, long = get_location(proxy, auth)
+
+        driver.execute_cdp_cmd(
+            "Emulation.setGeolocationOverride",
+            {"latitude": lat, "longitude": long, "accuracy": accuracy},
+        )
+
+    else:
+        driver = undetected_chromedriver.Chrome(
+            version_main=chrome_version, options=chrome_options, headless=headless
+        )
+
+    return driver

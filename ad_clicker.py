@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 
 from config import logger
 from proxy import get_proxies
+from utils import create_webdriver
 from search_controller import SearchController
 
 
@@ -63,13 +64,12 @@ def main():
         logger.debug(f"Proxies: {proxies}")
 
         proxy = random.choice(proxies)
-        logger.info(f"Using proxy: {proxy}")
     else:
         proxy = None
 
-    search_controller = SearchController(
-        args.query, args.ad_visit_time, args.headless, proxy, args.auth
-    )
+    driver = create_webdriver(proxy, args.auth, args.headless)
+
+    search_controller = SearchController(driver, args.query, args.ad_visit_time)
     ads = search_controller.search_for_ads()
 
     if not ads:

@@ -20,7 +20,7 @@ Run the following commands to install required packages.
 ## How to run
 
 ```
-usage: python ad_clicker.py [-h] [-q QUERY] [-t AD_VISIT_TIME] [--headless] [-p PROXY] [-pf PROXY_FILE]
+usage: python ad_clicker.py [-h] [-q QUERY] [-t AD_VISIT_TIME] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth]
 
 optional arguments:
   -h, --help                                   show this help message and exit
