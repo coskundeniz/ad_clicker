@@ -13,10 +13,9 @@ from selenium.common.exceptions import (
 )
 
 from config import logger
-from translations import contains_ad
 
 
-AdList = list[tuple[selenium.webdriver.remote.webelement.WebElement, str]]
+AdList = list[tuple[selenium.webdriver.remote.webelement.WebElement, str, str]]
 
 
 class SearchController:
@@ -39,7 +38,7 @@ class SearchController:
     TOP_ADS_CONTAINER = (By.ID, "tads")
     BOTTOM_ADS_CONTAINER = (By.ID, "tadsb")
     AD_RESULTS = (By.CSS_SELECTOR, "div > a")
-    AD_LANG_TEXT = (By.CSS_SELECTOR, "div:last-child > span:first-child")
+    AD_TITLE = (By.CSS_SELECTOR, "div[role='heading']")
 
     def __init__(self, driver: selenium.webdriver, query: str, ad_visit_time: int) -> None:
 
@@ -53,7 +52,7 @@ class SearchController:
         """Start search for the given query and return ads if any
 
         :rtype: list
-        :returns: List of (ad, ad_link) tuples
+        :returns: List of (ad, ad_link, ad_title) tuples
         """
 
         logger.info(f"Starting search for '{self._search_query}'")
@@ -87,7 +86,7 @@ class SearchController:
         """Click ads found
 
         :type ads: AdList
-        :param ads: List of (ad, ad_link) tuples
+        :param ads: List of (ad, ad_link, ad_title) tuples
         """
 
         # store the ID of the original window
@@ -96,7 +95,8 @@ class SearchController:
         for ad in ads:
             ad_link_element = ad[0]
             ad_link = ad[1]
-            logger.info(f"Clicking {ad_link}...")
+            ad_title = ad[2]
+            logger.info(f"Clicking to [{ad_title}]({ad_link})...")
 
             # open link in a different tab
             ad_link_element.send_keys(Keys.CONTROL + Keys.RETURN)
@@ -132,7 +132,7 @@ class SearchController:
         """Extract ad links to click
 
         :rtype: AdList
-        :returns: List of (ad, ad_link) tuples
+        :returns: List of (ad, ad_link, ad_title) tuples
         """
 
         ads = []
@@ -142,16 +142,16 @@ class SearchController:
             ads_container = self._driver.find_element(*self.TOP_ADS_CONTAINER)
             ads = ads_container.find_elements(*self.AD_RESULTS)
 
-        except NoSuchElementException as exp:
-            logger.debug(exp)
+        except NoSuchElementException:
+            logger.debug("Could not found top ads!")
             empty_ads_container += 1
 
         try:
             bottom_ads_container = self._driver.find_element(*self.BOTTOM_ADS_CONTAINER)
             ads.extend(bottom_ads_container.find_elements(*self.AD_RESULTS))
 
-        except NoSuchElementException as exp:
-            logger.debug(exp)
+        except NoSuchElementException:
+            logger.debug("Could not found bottom ads!")
             empty_ads_container += 1
 
         if empty_ads_container == 2:
@@ -163,14 +163,13 @@ class SearchController:
         ad_links = []
 
         for ad in ads:
-            ad_text_element = ad.find_element(*self.AD_LANG_TEXT)
-            ad_text = ad_text_element.text.lower()
+            logger.info("======= Found an Ad =======")
 
-            if contains_ad(ad_text):
-                logger.info("======= Found an Ad =======")
-                ad_link = ad.get_attribute("href")
-                logger.debug(f"Ad Link: {ad_link}")
-                ad_links.append((ad, ad_link))
+            ad_link = ad.get_attribute("href")
+            ad_title = ad.find_element(*self.AD_TITLE).text
+            logger.debug(f"Ad title: {ad_title}, Ad link: {ad_link}")
+
+            ad_links.append((ad, ad_link, ad_title))
 
         return ad_links
 
