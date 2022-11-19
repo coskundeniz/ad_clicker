@@ -104,10 +104,10 @@ def get_location(proxy: str, auth: Optional[bool] = False) -> tuple[float, float
         )
 
         ip_address = response.text
-
-        logger.info(f"Connecting with IP: {ip_address}")
     else:
         ip_address = proxy.split(":")[0]
+
+    logger.info(f"Connecting with IP: {ip_address}")
 
     retry_count = 0
 
@@ -134,7 +134,10 @@ def get_location(proxy: str, auth: Optional[bool] = False) -> tuple[float, float
         except requests.RequestException as exp:
             logger.error(exp)
 
-        logger.error("Couldn't find latitude and longitude! Retrying after a second...")
+        logger.debug(
+            f"Couldn't find latitude and longitude for {ip_address}! Retrying after a second..."
+        )
+
         retry_count += 1
         sleep(1)
 

@@ -43,8 +43,8 @@ class SearchController:
     def __init__(self, driver: selenium.webdriver, query: str, ad_visit_time: int) -> None:
 
         self._driver = driver
-        self._search_query = query
         self._ad_visit_time = ad_visit_time
+        self._search_query, self._filter_words = self._process_query(query)
 
         self._load()
 
@@ -160,9 +160,23 @@ class SearchController:
         # clean sublinks
         ads = [ad_link for ad_link in ads if ad_link.get_attribute("data-pcu")]
 
+        # if there are filter words given, filter results accordingly
+        filtered_ads = []
+
+        if self._filter_words:
+
+            for ad in ads:
+                ad_title = ad.find_element(*self.AD_TITLE).text.lower()
+
+                for word in self._filter_words:
+                    if word in ad.get_attribute("data-pcu") or word in ad_title:
+                        filtered_ads.append(ad)
+        else:
+            filtered_ads = ads
+
         ad_links = []
 
-        for ad in ads:
+        for ad in filtered_ads:
             logger.info("======= Found an Ad =======")
 
             ad_link = ad.get_attribute("href")
@@ -184,3 +198,28 @@ class SearchController:
 
         except (NoSuchElementException, ElementNotInteractableException, IndexError):
             pass
+
+    @staticmethod
+    def _process_query(query: str) -> tuple[str, list[str]]:
+        """Extract search query and filter words from the query input
+
+        Query and filter words are splitted with "@" character. Multiple
+        filter words can be used by separating with "#" character.
+
+        e.g. wireless keyboard@amazon#ebay
+             bluetooth headphones @ sony # amazon  #bose
+
+        :type query: str
+        :param query: Query string with optional filter words
+        :rtype tuple
+        :returns: Search query and list of filter words if any
+        """
+
+        search_query = query.split("@")[0].strip()
+
+        filter_words = []
+
+        if "@" in query:
+            filter_words = [word.strip().lower() for word in query.split("@")[1].split("#")]
+
+        return (search_query, filter_words)

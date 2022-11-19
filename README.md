@@ -62,6 +62,14 @@ optional arguments:
 
     * `python ad_clicker.py -q "wireless keyboard" -pf ~/proxies.txt`
 
+* Search for "wireless speaker" and click links that include the given filter words in url or title.
+
+    * `python ad_clicker.py -q "wireless speaker@amazon#ebay  # mediamarkt"`
+
+    * Spaces around "@" and "#" are ignored, so both "wireless speaker@amazon#ebay" and
+    "wireless speaker @ amazon  # ebay" take "wireless speaker" as search query and "amazon" and "ebay"
+    as filter words.
+
 ---
 
 ## Support
