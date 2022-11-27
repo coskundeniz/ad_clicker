@@ -32,7 +32,7 @@ class SearchController:
     URL = "https://www.google.com"
 
     SEARCH_INPUT = (By.NAME, "q")
-    RESULTS_CONTAINER = (By.ID, "result-stats")
+    RESULTS_CONTAINER = (By.ID, "appbar")
     COOKIE_DIALOG = (By.CSS_SELECTOR, "div[role='dialog']")
     COOKIE_ACCEPT_BUTTON = (By.TAG_NAME, "button")
     TOP_ADS_CONTAINER = (By.ID, "tads")
@@ -136,29 +136,32 @@ class SearchController:
         """
 
         ads = []
-        empty_ads_container = 0
 
-        try:
-            ads_container = self._driver.find_element(*self.TOP_ADS_CONTAINER)
-            ads = ads_container.find_elements(*self.AD_RESULTS)
+        while not self._is_scroll_at_the_end():
+            try:
+                top_ads_containers = self._driver.find_elements(*self.TOP_ADS_CONTAINER)
+                for ad_container in top_ads_containers:
+                    ads.extend(ad_container.find_elements(*self.AD_RESULTS))
 
-        except NoSuchElementException:
-            logger.debug("Could not found top ads!")
-            empty_ads_container += 1
+            except NoSuchElementException:
+                logger.debug("Could not found top ads!")
 
-        try:
-            bottom_ads_container = self._driver.find_element(*self.BOTTOM_ADS_CONTAINER)
-            ads.extend(bottom_ads_container.find_elements(*self.AD_RESULTS))
+            try:
+                bottom_ads_containers = self._driver.find_elements(*self.BOTTOM_ADS_CONTAINER)
+                for ad_container in bottom_ads_containers:
+                    ads.extend(ad_container.find_elements(*self.AD_RESULTS))
 
-        except NoSuchElementException:
-            logger.debug("Could not found bottom ads!")
-            empty_ads_container += 1
+            except NoSuchElementException:
+                logger.debug("Could not found bottom ads!")
 
-        if empty_ads_container == 2:
+            self._driver.find_element(By.TAG_NAME, "body").send_keys(Keys.PAGE_DOWN)
+            sleep(1)
+
+        if not ads:
             return []
 
-        # clean sublinks
-        ads = [ad_link for ad_link in ads if ad_link.get_attribute("data-pcu")]
+        # clean non-ad links and duplicates
+        ads = set([ad_link for ad_link in ads if ad_link.get_attribute("data-pcu")])
 
         # if there are filter words given, filter results accordingly
         filtered_ads = []
@@ -198,6 +201,20 @@ class SearchController:
 
         except (NoSuchElementException, ElementNotInteractableException, IndexError):
             pass
+
+    def _is_scroll_at_the_end(self) -> bool:
+        """Check if scroll is at the end
+
+        :rtype: bool
+        :returns: Whether the scrollbar was reached to end or not
+        """
+
+        page_height = self._driver.execute_script("return document.body.scrollHeight;")
+        total_scrolled_height = self._driver.execute_script(
+            "return window.pageYOffset + window.innerHeight;"
+        )
+
+        return page_height - 1 <= total_scrolled_height
 
     @staticmethod
     def _process_query(query: str) -> tuple[str, list[str]]:
