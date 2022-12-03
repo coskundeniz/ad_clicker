@@ -1,10 +1,13 @@
 import random
 from argparse import ArgumentParser
 
-from config import logger
+from config import logger, update_log_formats
 from proxy import get_proxies
 from utils import create_webdriver
 from search_controller import SearchController
+
+
+__author__ = "Coşkun Deniz <coskun.denize@gmail.com>"
 
 
 def get_arg_parser() -> ArgumentParser:
@@ -42,6 +45,7 @@ def get_arg_parser() -> ArgumentParser:
         If this is passed, proxy parameter should be in "username:password@host:port" format
         """,
     )
+    arg_parser.add_argument("--id", help="Browser id for multiprocess run")
 
     return arg_parser
 
@@ -51,6 +55,9 @@ def main():
 
     arg_parser = get_arg_parser()
     args = arg_parser.parse_args()
+
+    if args.id:
+        update_log_formats(args.id)
 
     if not args.query:
         logger.error("Run with search query!")

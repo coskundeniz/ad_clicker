@@ -1,6 +1,7 @@
 import re
 import random
 import subprocess
+from pathlib import Path
 from time import sleep
 from typing import Optional
 
@@ -170,6 +171,26 @@ def get_installed_chrome_version() -> int:
         logger.error("Failed to get Chrome version! Latest version will be used.")
 
     return major_version
+
+
+def get_queries(query_file: Path) -> list[str]:
+    """Get queries from file
+
+    :type query_file: Path
+    :param query_file: File containing queries
+    :rtype: list
+    :returns: List of queries
+    """
+
+    filepath = Path(query_file)
+
+    if not filepath.exists():
+        raise SystemExit(f"Couldn't find queries file: {filepath}")
+
+    with open(filepath) as queryfile:
+        queries = queryfile.read().splitlines()
+
+    return queries
 
 
 def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chromedriver.Chrome:

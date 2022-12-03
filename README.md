@@ -14,7 +14,7 @@ Run the following commands to install required packages.
 
 * `python -m venv env`
 * `source env/bin/activate`
-* `pip install -r requirements.txt`
+* `python -m pip install -r requirements.txt`
 
 
 ## How to run
@@ -23,14 +23,19 @@ Run the following commands to install required packages.
 usage: python ad_clicker.py [-h] [-q QUERY] [-t AD_VISIT_TIME] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth]
 
 optional arguments:
-  -h, --help                                   show this help message and exit
-  -q QUERY, --query QUERY                      Search query
-  -t AD_VISIT_TIME, --visittime AD_VISIT_TIME  Number of seconds to wait on the ad page opened
-  --headless                                   Use headless browser
-  -p PROXY, --proxy PROXY                      Use the given proxy in ip:port format
-  -pf PROXY_FILE, --proxy_file PROXY_FILE      Select a proxy from the given file
-  --auth                                       Use proxy with username and password. If this is passed,
-                                               proxy parameter should be in "username:password@host:port" format
+  -h, --help                                                       show this help message and exit
+  -q QUERY, --query QUERY                                          Search query
+  -t AD_VISIT_TIME, --visittime AD_VISIT_TIME                      Number of seconds to wait on the ad page opened
+  --headless                                                       Use headless browser
+  -p PROXY, --proxy PROXY                                          Use the given proxy in ip:port format
+  -pf PROXY_FILE, --proxy_file PROXY_FILE                          Select a proxy from the given file
+  --auth                                                           Use proxy with username and password. If this is passed,
+                                                                   proxy parameter should be in "username:password@host:port" format
+  -bc BROWSER_COUNT, --browser_count BROWSER_COUNT                 Maximum number of browsers to run concurrently (valid for multiprocess run)
+  -ms MULTIPROCESS_STYLE, --multiprocess_style MULTIPROCESS_STYLE  Style of the multiprocess run. (valid for multiprocess run)
+                                                                   1: single browser instance for each query (default)
+                                                                   2: multiple browser instances for each query
+
 ```
 
 `python ad_clicker.py -q <search query> [-t ad_visit_time_in_seconds] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth]`
@@ -69,6 +74,29 @@ optional arguments:
     * Spaces around "@" and "#" are ignored, so both "wireless speaker@amazon#ebay" and
     "wireless speaker @ amazon  # ebay" take "wireless speaker" as search query and "amazon" and "ebay"
     as filter words.
+
+* Run multiple browsers by taking queries and proxies with authentication from the given files.
+
+    * `python run_ad_clicker.py -qf ~/queries.txt --auth -pf ~/proxies.txt`
+
+* Run multiple browsers by taking queries and proxies without authentication from the given files with 10 browsers.
+
+    * `python run_ad_clicker.py -qf ~/queries.txt -pf ~/proxies.txt -bc 10`
+
+    * If -bc(--browser_count) option is not given, the number of cpu cores is used.
+
+* Run multiple browsers by taking queries and proxies from the given files using alternative multiprocess style.
+
+    * `python run_ad_clicker.py -qf ~/queries.txt -pf ~/proxies.txt -ms 2`
+
+    * **1**: each browser instance gets a different query from file (default) (e.g. 5 browsers search the first 5 queries from the file.
+        After they are completed, second group of 5 browsers search the next 5 queries from the file and so on)
+    * **2**: multiple browser instances get the same query (e.g. 5 browsers search the first query from file. After
+        they are completed, second group of 5 browsers search the second query and so on)
+
+    * If the number of queries or proxies are less than the number of browsers to run, they are cycled.
+
+![Multiprocess Run](assets/ad_clicker_multiprocess.gif)
 
 ---
 
