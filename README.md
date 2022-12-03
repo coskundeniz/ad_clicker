@@ -31,6 +31,7 @@ optional arguments:
   -pf PROXY_FILE, --proxy_file PROXY_FILE                          Select a proxy from the given file
   --auth                                                           Use proxy with username and password. If this is passed,
                                                                    proxy parameter should be in "username:password@host:port" format
+  -qf QUERY_FILE, --query_file QUERY_FILE                          Read queries to search from the given file (valid for multiprocess run)
   -bc BROWSER_COUNT, --browser_count BROWSER_COUNT                 Maximum number of browsers to run concurrently (valid for multiprocess run)
   -ms MULTIPROCESS_STYLE, --multiprocess_style MULTIPROCESS_STYLE  Style of the multiprocess run. (valid for multiprocess run)
                                                                    1: single browser instance for each query (default)
