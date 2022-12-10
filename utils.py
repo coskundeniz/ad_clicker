@@ -1,4 +1,5 @@
 import re
+import sys
 import random
 import subprocess
 from pathlib import Path
@@ -161,9 +162,18 @@ def get_installed_chrome_version() -> int:
     major_version = None
 
     try:
-        result = subprocess.run(["google-chrome", "--version"], capture_output=True)
-
-        major_version = int(str(result.stdout).split(" ")[-2].split(".")[0])
+        if sys.platform == "win32":
+            chrome_exe_path = undetected_chromedriver.find_chrome_executable()
+            version_command = (
+                f"wmic datafile where name='{chrome_exe_path}' get Version /value".replace(
+                    "\\", "\\\\"
+                )
+            )
+            chrome_version = subprocess.check_output(version_command, shell=True)
+            major_version = int(chrome_version.decode("utf-8").strip().split(".")[0].split("=")[1])
+        else:
+            result = subprocess.run(["google-chrome", "--version"], capture_output=True)
+            major_version = int(str(result.stdout).split(" ")[-2].split(".")[0])
 
         logger.debug(f"Installed Chrome version: {major_version}")
 

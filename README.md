@@ -10,10 +10,10 @@ Supports Python 3.9+
 
 ## How to setup
 
-Run the following commands to install required packages.
+Run the following commands in project directory to install required packages.
 
 * `python -m venv env`
-* `source env/bin/activate`
+* `source env/bin/activate` or `.\env\Scripts\activate` (for Windows)
 * `python -m pip install -r requirements.txt`
 
 
@@ -98,6 +98,22 @@ optional arguments:
     * If the number of queries or proxies are less than the number of browsers to run, they are cycled.
 
 ![Multiprocess Run](assets/ad_clicker_multiprocess.gif)
+
+* Run shell script to run the tool in loop.
+
+    * `./run_in_loop.sh`
+
+    * Default wait time between runs is 60 seconds.
+
+* Run shell script to run the tool in loop with given number of browser instances.
+
+    * `./run_in_loop.sh 4`
+
+* Run shell script to run the tool in loop with given number of browser instances and 2 minutes wait between runs.
+
+    * `./run_in_loop.sh 4 120`
+
+    * Wait time parameter should be in seconds.
 
 ---
 
