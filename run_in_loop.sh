@@ -1,8 +1,9 @@
 #!/bin/bash
 
+wait_time=60
+
 if [[ $# -eq 1 ]]; then
     browser_count=$1
-    wait_time=60
 elif [[ $# -eq 2 ]]; then
     browser_count=$1
     wait_time=$2
