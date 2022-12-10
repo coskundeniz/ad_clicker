@@ -103,6 +103,8 @@ optional arguments:
 
     * `./run_in_loop.sh`
 
+    * Loop script requires *proxies.txt* and *queries.txt* files under home folder.
+    * Proxies should be in *username:password@host:port* format.
     * Default wait time between runs is 60 seconds.
 
 * Run shell script to run the tool in loop with given number of browser instances.
