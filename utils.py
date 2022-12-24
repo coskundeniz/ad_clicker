@@ -15,6 +15,7 @@ from selenium.webdriver import DesiredCapabilities
 import undetected_chromedriver
 
 from config import logger
+from geolocation_db import GeolocationDB
 from proxy import install_plugin
 
 
@@ -96,9 +97,13 @@ def get_random_user_agent_string() -> str:
     return user_agent_string
 
 
-def get_location(proxy: str, auth: Optional[bool] = False) -> tuple[float, float]:
+def get_location(
+    geolocation_db_client: GeolocationDB, proxy: str, auth: Optional[bool] = False
+) -> tuple[float, float]:
     """Get latitude and longitude of ip address
 
+    :type geolocation_db_client: GeolocationDB
+    :param geolocation_db_client: GeolocationDB instance
     :type proxy: str
     :param proxy: Proxy to get geolocation
     :type auth: bool
@@ -119,37 +124,50 @@ def get_location(proxy: str, auth: Optional[bool] = False) -> tuple[float, float
 
     logger.info(f"Connecting with IP: {ip_address}")
 
-    retry_count = 0
+    db_result = geolocation_db_client.query_geolocation(ip_address)
 
-    while retry_count < 5:
+    if db_result:
+        latitude, longitude = db_result
+        logger.debug(f"Cached latitude and longitude for {ip_address}: ({latitude}, {longitude})")
 
-        try:
-            response = requests.get(f"https://ipapi.co/{ip_address}/json/", timeout=2).json()
-            latitude, longitude = response.get("latitude"), response.get("longitude")
+        return float(latitude), float(longitude)
 
-            if not (latitude or longitude):
-                # try a different api
-                response = requests.get(
-                    f"https://geolocation-db.com/json/{ip_address}", timeout=2
-                ).json()
+    else:
+        retry_count = 0
+
+        while retry_count < 5:
+
+            try:
+                response = requests.get(f"https://ipapi.co/{ip_address}/json/", timeout=2).json()
                 latitude, longitude = response.get("latitude"), response.get("longitude")
 
-                if latitude == "Not found":
-                    latitude = longitude = None
+                if not (latitude or longitude):
+                    # try a different api
+                    response = requests.get(
+                        f"https://geolocation-db.com/json/{ip_address}", timeout=2
+                    ).json()
+                    latitude, longitude = response.get("latitude"), response.get("longitude")
 
-            if latitude and longitude:
-                logger.debug(f"Latitude and longitude for {ip_address}: ({latitude}, {longitude})")
-                return latitude, longitude
+                    if latitude == "Not found":
+                        latitude = longitude = None
 
-        except requests.RequestException as exp:
-            logger.error(exp)
+                if latitude and longitude:
+                    logger.debug(
+                        f"Latitude and longitude for {ip_address}: ({latitude}, {longitude})"
+                    )
+                    geolocation_db_client.save_geolocation(ip_address, latitude, longitude)
 
-        logger.debug(
-            f"Couldn't find latitude and longitude for {ip_address}! Retrying after a second..."
-        )
+                    return latitude, longitude
 
-        retry_count += 1
-        sleep(1)
+            except requests.RequestException as exp:
+                logger.error(exp)
+
+            logger.debug(
+                f"Couldn't find latitude and longitude for {ip_address}! Retrying after a second..."
+            )
+
+            retry_count += 1
+            sleep(1)
 
 
 def get_installed_chrome_version() -> int:
@@ -216,6 +234,8 @@ def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chrom
     :returns: Selenium Chrome webdriver instance
     """
 
+    geolocation_db_client = GeolocationDB()
+
     user_agent_str = get_random_user_agent_string()
 
     chrome_options = ChromeOptions()
@@ -269,7 +289,7 @@ def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chrom
 
         # set geolocation of the browser according to IP address
         accuracy = 90
-        lat, long = get_location(proxy, auth)
+        lat, long = get_location(geolocation_db_client, proxy, auth)
 
         driver.execute_cdp_cmd(
             "Emulation.setGeolocationOverride",
