@@ -169,6 +169,9 @@ def get_location(
             retry_count += 1
             sleep(1)
 
+        if not (latitude or longitude):
+            return (None, None)
+
 
 def get_installed_chrome_version() -> int:
     """Get major version for the Chrome installed on the system
@@ -291,10 +294,11 @@ def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chrom
         accuracy = 90
         lat, long = get_location(geolocation_db_client, proxy, auth)
 
-        driver.execute_cdp_cmd(
-            "Emulation.setGeolocationOverride",
-            {"latitude": lat, "longitude": long, "accuracy": accuracy},
-        )
+        if lat and long:
+            driver.execute_cdp_cmd(
+                "Emulation.setGeolocationOverride",
+                {"latitude": lat, "longitude": long, "accuracy": accuracy},
+            )
 
     else:
         driver = undetected_chromedriver.Chrome(

@@ -12,8 +12,7 @@ DBCursor = sqlite3.Connection.cursor
 class GeolocationDB:
     """SQLite database to keep latitude, longitude for IP
 
-    Raises RuntimeError if database connection
-    is not established in 2 seconds.
+    Raises RuntimeError if database connection is not established.
     """
 
     def __init__(self) -> None:
