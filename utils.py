@@ -274,20 +274,12 @@ def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chrom
             install_plugin(chrome_options, host, port, username, password)
 
         else:
-            proxy_config = Proxy()
-            proxy_config.proxy_type = ProxyType.MANUAL
-            proxy_config.auto_detect = False
-            proxy_config.http_proxy = proxy
-            proxy_config.ssl_proxy = proxy
-
-            capabilities = DesiredCapabilities.CHROME.copy()
-            proxy_config.add_to_capabilities(capabilities)
+            chrome_options.add_argument(f"--proxy-server={proxy}")
 
         driver = undetected_chromedriver.Chrome(
             version_main=chrome_version,
             options=chrome_options,
             headless=headless,
-            desired_capabilities=capabilities if not auth else None,
         )
 
         # set geolocation of the browser according to IP address
