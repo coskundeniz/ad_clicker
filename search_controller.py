@@ -161,21 +161,30 @@ class SearchController:
             return []
 
         # clean non-ad links and duplicates
-        ads = set([ad_link for ad_link in ads if ad_link.get_attribute("data-pcu")])
+        cleaned_ads = []
+        links = []
+
+        for ad in ads:
+            if ad.get_attribute("data-pcu"):
+                ad_link = ad.get_attribute("href")
+
+                if ad_link not in links:
+                    links.append(ad_link)
+                    cleaned_ads.append(ad)
 
         # if there are filter words given, filter results accordingly
         filtered_ads = []
 
         if self._filter_words:
 
-            for ad in ads:
+            for ad in cleaned_ads:
                 ad_title = ad.find_element(*self.AD_TITLE).text.lower()
 
                 for word in self._filter_words:
                     if word in ad.get_attribute("data-pcu") or word in ad_title:
                         filtered_ads.append(ad)
         else:
-            filtered_ads = ads
+            filtered_ads = cleaned_ads
 
         ad_links = []
 
