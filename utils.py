@@ -271,7 +271,7 @@ def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chrom
             username, password = proxy.split("@")[0].split(":")
             host, port = proxy.split("@")[1].split(":")
 
-            install_plugin(chrome_options, host, port, username, password)
+            install_plugin(chrome_options, host, int(port), username, password)
 
         else:
             chrome_options.add_argument(f"--proxy-server={proxy}")

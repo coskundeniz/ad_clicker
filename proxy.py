@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from selenium.webdriver import ChromeOptions
+
 
 def get_proxies(proxy_file: Path) -> list[str]:
     """Get proxies from file
@@ -19,72 +21,88 @@ def get_proxies(proxy_file: Path) -> list[str]:
     return proxies
 
 
-def install_plugin(chrome_options, proxy_host: str, proxy_port: int, username: str, password: str):
-    """Install plugin on the fly for proxy authentication"""
+def install_plugin(
+    chrome_options: ChromeOptions, proxy_host: str, proxy_port: int, username: str, password: str
+) -> None:
+    """Install plugin on the fly for proxy authentication
 
-    import zipfile
-
-    manifest_json = """
-    {
-        "version": "1.0.0",
-        "manifest_version": 2,
-        "name": "Chrome Proxy",
-        "permissions": [
-            "proxy",
-            "tabs",
-            "unlimitedStorage",
-            "storage",
-            "<all_urls>",
-            "webRequest",
-            "webRequestBlocking"
-        ],
-        "background": {
-            "scripts": ["background.js"]
-        },
-        "minimum_chrome_version":"70.0.0"
-    }
+    :type chrome_options: ChromeOptions
+    :param chrome_options: ChromeOptions instance to add plugin
+    :type proxy_host: str
+    :param proxy_host: Proxy host
+    :type proxy_port: int
+    :param proxy_port: Proxy port
+    :type username: str
+    :param username: Proxy username
+    :type password: str
+    :param password: Proxy password
     """
 
+    manifest_json = """
+{
+    "version": "1.0.0",
+    "manifest_version": 3,
+    "name": "Chrome Proxy Authentication",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "permissions": [
+        "proxy",
+        "tabs",
+        "unlimitedStorage",
+        "storage",
+        "webRequest",
+        "webRequestAuthProvider"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "minimum_chrome_version": "108"
+}
+"""
+
     background_js = """
-        var config = {
-            mode: "fixed_servers",
-            rules: {
-            singleProxy: {
-                scheme: "http",
-                host: "%s",
-                port: parseInt(%s)
-            },
-            bypassList: ["localhost"]
-            }
-        };
+var config = {
+    mode: "fixed_servers",
+    rules: {
+        singleProxy: {
+            scheme: "http",
+            host: "%s",
+            port: %s
+        },
+        bypassList: ["localhost"]
+    }
+};
+chrome.proxy.settings.set({value: config, scope: "regular"}, function() {});
 
-        chrome.proxy.settings.set({value: config, scope: "regular"}, function() {});
-
-        function callbackFn(details) {
-            return {
-                authCredentials: {
-                    username: "%s",
-                    password: "%s"
-                }
-            };
+function callbackFn(details) {
+    return {
+        authCredentials: {
+            username: "%s",
+            password: "%s"
         }
+    };
+}
 
-        chrome.webRequest.onAuthRequired.addListener(
-            callbackFn,
-            {urls: ["<all_urls>"]},
-            ['blocking']
-        );
-    """ % (
+chrome.webRequest.onAuthRequired.addListener(
+    callbackFn,
+    { urls: ["<all_urls>"] },
+    ['blocking']
+);
+""" % (
         proxy_host,
         proxy_port,
         username,
         password,
     )
 
-    pluginfile = "proxy_auth_plugin.zip"
+    plugin_folder = Path.cwd() / "proxy_auth_plugin"
+    plugin_folder.mkdir(exist_ok=True)
 
-    with zipfile.ZipFile(pluginfile, "w") as zp:
-        zp.writestr("manifest.json", manifest_json)
-        zp.writestr("background.js", background_js)
+    with open(plugin_folder / "manifest.json", "w") as manifest_file:
+        manifest_file.write(manifest_json)
 
-    chrome_options.add_extension(pluginfile)
+    with open(plugin_folder / "background.js", "w") as background_js_file:
+        background_js_file.write(background_js)
+
+    chrome_options.add_argument(f"--load-extension={plugin_folder}")
