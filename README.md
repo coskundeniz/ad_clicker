@@ -4,7 +4,8 @@ This command-line tool clicks ads for a certain query on Google search using [un
 
 Old version of the tool can be found in the `old_version` branch.
 
-Supports Python 3.9+
+* Supports Python 3.9+
+* Requires Chrome 108+
 
 [Related post on Medium](https://python.plainenglish.io/google-ads-clicker-with-python-selenium-and-tor-a6ff8078da2a)
 
