@@ -1,4 +1,3 @@
-import re
 import sys
 import random
 import subprocess
@@ -7,12 +6,8 @@ from time import sleep
 from typing import Optional
 
 import requests
-from random_user_agent.user_agent import UserAgent
-from random_user_agent.params import SoftwareName, OperatingSystem, Popularity, SoftwareType
-from selenium.webdriver.common.proxy import Proxy, ProxyType
-from selenium.webdriver import ChromeOptions
-from selenium.webdriver import DesiredCapabilities
 import undetected_chromedriver
+from selenium.webdriver import ChromeOptions
 
 from config import logger
 from geolocation_db import GeolocationDB
@@ -47,50 +42,11 @@ USER_AGENTS = [
 def get_random_user_agent_string() -> str:
     """Get random user agent
 
-    If returned value from random_user_agent package has Chrome version less than 90,
-    choice user agent string from the values defined in USER_AGENTS list.
-
     :rtype: str
     :returns: User agent string
     """
 
-    software_names = [SoftwareName.CHROME.value]
-    operating_systems = [
-        OperatingSystem.MAC.value,
-        OperatingSystem.LINUX.value,
-        OperatingSystem.WINDOWS.value,
-    ]
-    software_types = [SoftwareType.WEB_BROWSER.value, SoftwareType.APPLICATION.value]
-    popularity = [Popularity.POPULAR.value, Popularity.COMMON.value, Popularity.AVERAGE.value]
-
-    user_agent_rotator = UserAgent(
-        software_names=software_names,
-        operating_systems=operating_systems,
-        software_types=software_types,
-        popularity=popularity,
-        limit=1000,
-    )
-    user_agents = user_agent_rotator.get_user_agents()
-    selected_versions = []
-
-    for item in user_agents:
-        user_agent_str = item["user_agent"]
-
-        if re.search("Chrome\/\s*v*(\d+)", user_agent_str):
-            major_version = int(re.search("Chrome\/\s*v*(\d+)", user_agent_str).group(1))
-
-            if major_version > 70:
-                selected_versions.append((user_agent_str, major_version))
-
-    if selected_versions:
-        user_agent_string, chrome_version = sorted(
-            selected_versions, key=lambda x: x[1], reverse=True
-        )[0]
-
-        if chrome_version < 90:
-            user_agent_string = random.choice(USER_AGENTS)
-    else:
-        user_agent_string = random.choice(USER_AGENTS)
+    user_agent_string = random.choice(USER_AGENTS)
 
     logger.debug(f"user_agent: {user_agent_string}")
 
