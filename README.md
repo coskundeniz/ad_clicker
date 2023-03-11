@@ -17,11 +17,13 @@ Run the following commands in project directory to install required packages.
 * `source env/bin/activate` or `.\env\Scripts\activate` (for Windows)
 * `python -m pip install -r requirements.txt`
 
+If `python` command gives error on Windows, try with `py`.
+
 
 ## How to run
 
 ```
-usage: python ad_clicker.py [-h] [-q QUERY] [-t AD_VISIT_TIME] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth]
+usage: python ad_clicker.py [-h] [-q QUERY] [-e EXCLUDES] [-t AD_VISIT_TIME] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth]
 
 optional arguments:
   -h, --help                                                       show this help message and exit
@@ -32,6 +34,7 @@ optional arguments:
   -pf PROXY_FILE, --proxy_file PROXY_FILE                          Select a proxy from the given file
   --auth                                                           Use proxy with username and password. If this is passed,
                                                                    proxy parameter should be in "username:password@host:port" format
+  -e EXCLUDES, --excludes EXCLUDES                                 Exclude the ads that contain given words in url or title
   -qf QUERY_FILE, --query_file QUERY_FILE                          Read queries to search from the given file (valid for multiprocess run)
   -bc BROWSER_COUNT, --browser_count BROWSER_COUNT                 Maximum number of browsers to run concurrently (valid for multiprocess run)
   -ms MULTIPROCESS_STYLE, --multiprocess_style MULTIPROCESS_STYLE  Style of the multiprocess run. (valid for multiprocess run)
@@ -40,7 +43,7 @@ optional arguments:
 
 ```
 
-`python ad_clicker.py -q <search query> [-t ad_visit_time_in_seconds] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth]`
+`python ad_clicker.py -q <search query> [-e EXCLUDES] [-t ad_visit_time_in_seconds] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth]`
 
 
 ### Examples
@@ -77,9 +80,19 @@ optional arguments:
     "wireless speaker @ amazon  # ebay" take "wireless speaker" as search query and "amazon" and "ebay"
     as filter words.
 
+* Search for "wireless speaker" and click links except the ones containing the given words in url or title.
+
+    * `python ad_clicker.py -q "wireless speaker" -e "amazon.com,mediamarkt.com,for 2022,Soundbar"`
+
+    * Separate multiple exclude items with comma.
+
 * Run multiple browsers by taking queries and proxies with authentication from the given files.
 
     * `python run_ad_clicker.py -qf ~/queries.txt --auth -pf ~/proxies.txt`
+
+* Run multiple browsers by taking queries and proxies with authentication from the given files and pass exclude words.
+
+    * `python run_ad_clicker.py -qf ~/queries.txt --auth -pf ~/proxies.txt -e "amazon.com,mediamarkt.com,for 2022"`
 
 * Run multiple browsers by taking queries and proxies without authentication from the given files with 10 browsers.
 

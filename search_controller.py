@@ -27,6 +27,8 @@ class SearchController:
     :param query: Search query
     :type ad_visit_time: int
     :param ad_visit_time: Number of seconds to wait on the ad page
+    :type excludes: str
+    :param excludes: Words to exclude ads containing them in url or title
     """
 
     URL = "https://www.google.com"
@@ -40,11 +42,18 @@ class SearchController:
     AD_RESULTS = (By.CSS_SELECTOR, "div > a")
     AD_TITLE = (By.CSS_SELECTOR, "div[role='heading']")
 
-    def __init__(self, driver: selenium.webdriver, query: str, ad_visit_time: int) -> None:
+    def __init__(
+        self, driver: selenium.webdriver, query: str, ad_visit_time: int, excludes: str = None
+    ) -> None:
 
         self._driver = driver
         self._ad_visit_time = ad_visit_time
         self._search_query, self._filter_words = self._process_query(query)
+        self._exclude_list = None
+
+        if excludes:
+            self._exclude_list = [item.strip() for item in excludes.split(",")]
+            logger.debug(f"Words to be excluded: {self._exclude_list}")
 
         self._load()
 
@@ -176,7 +185,6 @@ class SearchController:
         filtered_ads = []
 
         if self._filter_words:
-
             for ad in cleaned_ads:
                 ad_title = ad.find_element(*self.AD_TITLE).text.lower()
 
@@ -189,13 +197,24 @@ class SearchController:
         ad_links = []
 
         for ad in filtered_ads:
-            logger.info("======= Found an Ad =======")
-
             ad_link = ad.get_attribute("href")
             ad_title = ad.find_element(*self.AD_TITLE).text
             logger.debug(f"Ad title: {ad_title}, Ad link: {ad_link}")
 
-            ad_links.append((ad, ad_link, ad_title))
+            if self._exclude_list:
+                for exclude_item in self._exclude_list:
+                    if (
+                        exclude_item in ad.get_attribute("data-pcu")
+                        or exclude_item.lower() in ad_title.lower()
+                    ):
+                        logger.debug(f"Excluding [{ad_title}]: {ad_link}")
+                        break
+                else:
+                    logger.info("======= Found an Ad =======")
+                    ad_links.append((ad, ad_link, ad_title))
+            else:
+                logger.info("======= Found an Ad =======")
+                ad_links.append((ad, ad_link, ad_title))
 
         return ad_links
 

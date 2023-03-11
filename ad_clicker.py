@@ -45,6 +45,11 @@ def get_arg_parser() -> ArgumentParser:
         If this is passed, proxy parameter should be in "username:password@host:port" format
         """,
     )
+    arg_parser.add_argument(
+        "-e",
+        "--excludes",
+        help="Exclude the ads that contain given words in url or title",
+    )
     arg_parser.add_argument("--id", help="Browser id for multiprocess run")
 
     return arg_parser
@@ -76,7 +81,7 @@ def main():
 
     driver = create_webdriver(proxy, args.auth, args.headless)
 
-    search_controller = SearchController(driver, args.query, args.ad_visit_time)
+    search_controller = SearchController(driver, args.query, args.ad_visit_time, args.excludes)
     ads = search_controller.search_for_ads()
 
     if not ads:

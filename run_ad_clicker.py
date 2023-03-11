@@ -2,6 +2,7 @@ import psutil
 import random
 import subprocess
 import multiprocessing
+from typing import Optional
 from itertools import cycle
 from concurrent.futures import ProcessPoolExecutor, wait
 
@@ -38,6 +39,11 @@ def get_arg_parser() -> ArgumentParser:
         help="Select a proxy from the given file",
     )
     arg_parser.add_argument(
+        "-e",
+        "--excludes",
+        help="Exclude the ads that contain given words in url or title",
+    )
+    arg_parser.add_argument(
         "--auth",
         action="store_true",
         help="""Use proxy with username and password.
@@ -65,7 +71,13 @@ def get_arg_parser() -> ArgumentParser:
     return arg_parser
 
 
-def start_tool(browser_id, query, proxy, auth) -> None:
+def start_tool(
+    browser_id: int,
+    query: str,
+    proxy: str,
+    auth: Optional[bool] = None,
+    excludes: Optional[str] = None,
+) -> None:
     """Start the tool
 
     :type browser_id: int
@@ -76,9 +88,15 @@ def start_tool(browser_id, query, proxy, auth) -> None:
     :param proxy: Proxy to use in ip:port or user:pass@host:port format
     :type auth: bool
     :param auth: Whether authentication is used or not for proxy
+    :type excludes: str
+    :param excludes: Words to exclude ads containing them in url or title
     """
 
     command = f"python {Path('ad_clicker.py').resolve()} -q '{query}' -p '{proxy}' {'--auth' if auth else ''} --id {browser_id}"
+
+    if excludes:
+        command += f" -e '{excludes}'"
+
     subprocess.run(command, shell=True, check=True)
 
 
@@ -126,7 +144,7 @@ def main():
         with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
 
             futures = [
-                executor.submit(start_tool, i, next(query), next(proxy), args.auth)
+                executor.submit(start_tool, i, next(query), next(proxy), args.auth, args.excludes)
                 for i in range(1, MAX_WORKERS + 1)
             ]
 
@@ -147,7 +165,7 @@ def main():
             with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
 
                 futures = [
-                    executor.submit(start_tool, i, query, next(proxy), args.auth)
+                    executor.submit(start_tool, i, query, next(proxy), args.auth, args.excludes)
                     for i in range(1, MAX_WORKERS + 1)
                 ]
 
