@@ -16,7 +16,10 @@ def get_proxies(proxy_file: Path) -> list[str]:
         raise SystemExit(f"Couldn't find proxy file: {filepath}")
 
     with open(filepath) as proxyfile:
-        proxies = proxyfile.read().splitlines()
+        proxies = [
+            proxy.strip().replace("'", "").replace('"', "")
+            for proxy in proxyfile.read().splitlines()
+        ]
 
     return proxies
 

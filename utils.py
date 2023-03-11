@@ -7,7 +7,6 @@ from typing import Optional
 
 import requests
 import undetected_chromedriver
-from selenium.webdriver import ChromeOptions
 
 from config import logger
 from geolocation_db import GeolocationDB
@@ -175,7 +174,10 @@ def get_queries(query_file: Path) -> list[str]:
         raise SystemExit(f"Couldn't find queries file: {filepath}")
 
     with open(filepath) as queryfile:
-        queries = queryfile.read().splitlines()
+        queries = [
+            query.strip().replace("'", "").replace('"', "")
+            for query in queryfile.read().splitlines()
+        ]
 
     return queries
 
@@ -197,7 +199,7 @@ def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chrom
 
     user_agent_str = get_random_user_agent_string()
 
-    chrome_options = ChromeOptions()
+    chrome_options = undetected_chromedriver.ChromeOptions()
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-infobars")
