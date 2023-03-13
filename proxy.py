@@ -15,7 +15,7 @@ def get_proxies(proxy_file: Path) -> list[str]:
     if not filepath.exists():
         raise SystemExit(f"Couldn't find proxy file: {filepath}")
 
-    with open(filepath) as proxyfile:
+    with open(filepath, encoding="utf-8") as proxyfile:
         proxies = [
             proxy.strip().replace("'", "").replace('"', "")
             for proxy in proxyfile.read().splitlines()

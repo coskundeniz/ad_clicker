@@ -147,9 +147,18 @@ def get_installed_chrome_version() -> int:
             )
             chrome_version = subprocess.check_output(version_command, shell=True)
             major_version = int(chrome_version.decode("utf-8").strip().split(".")[0].split("=")[1])
+
+        elif sys.platform == "darwin":
+            chrome_version = subprocess.run(
+                "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --version",
+                shell=True,
+                capture_output=True,
+            )
+            major_version = int(chrome_version.stdout.decode("utf-8").split()[-1].split(".")[0])
+
         else:
-            result = subprocess.run(["google-chrome", "--version"], capture_output=True)
-            major_version = int(str(result.stdout).split(" ")[-2].split(".")[0])
+            chrome_version = subprocess.run(["google-chrome", "--version"], capture_output=True)
+            major_version = int(str(chrome_version.stdout).split()[-2].split(".")[0])
 
         logger.debug(f"Installed Chrome version: {major_version}")
 
@@ -173,7 +182,7 @@ def get_queries(query_file: Path) -> list[str]:
     if not filepath.exists():
         raise SystemExit(f"Couldn't find queries file: {filepath}")
 
-    with open(filepath) as queryfile:
+    with open(filepath, encoding="utf-8") as queryfile:
         queries = [
             query.strip().replace("'", "").replace('"', "")
             for query in queryfile.read().splitlines()
