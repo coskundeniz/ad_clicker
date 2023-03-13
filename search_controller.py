@@ -10,6 +10,8 @@ from selenium.common.exceptions import (
     TimeoutException,
     NoSuchElementException,
     ElementNotInteractableException,
+    ElementClickInterceptedException,
+    StaleElementReferenceException,
 )
 
 from config import logger
@@ -35,8 +37,7 @@ class SearchController:
 
     SEARCH_INPUT = (By.NAME, "q")
     RESULTS_CONTAINER = (By.ID, "appbar")
-    COOKIE_DIALOG = (By.CSS_SELECTOR, "div[role='dialog']")
-    COOKIE_ACCEPT_BUTTON = (By.TAG_NAME, "button")
+    COOKIE_DIALOG_BUTTON = (By.TAG_NAME, "button")
     TOP_ADS_CONTAINER = (By.ID, "tads")
     BOTTOM_ADS_CONTAINER = (By.ID, "tadsb")
     AD_RESULTS = (By.CSS_SELECTOR, "div > a")
@@ -57,7 +58,7 @@ class SearchController:
 
         self._load()
 
-    def search_for_ads(self):
+    def search_for_ads(self) -> AdList:
         """Start search for the given query and return ads if any
 
         :rtype: list
@@ -66,10 +67,14 @@ class SearchController:
 
         logger.info(f"Starting search for '{self._search_query}'")
 
-        self._close_cookie_dialog()
+        try:
+            search_input_box = self._driver.find_element(*self.SEARCH_INPUT)
+            search_input_box.send_keys(self._search_query, Keys.ENTER)
+        except ElementNotInteractableException:
+            self._close_cookie_dialog()
 
-        search_input_box = self._driver.find_element(*self.SEARCH_INPUT)
-        search_input_box.send_keys(self._search_query, Keys.ENTER)
+            search_input_box = self._driver.find_element(*self.SEARCH_INPUT)
+            search_input_box.send_keys(self._search_query, Keys.ENTER)
 
         # sleep after entering search keyword by randomly selected amount
         # between 0.5 and 3 seconds
@@ -221,14 +226,49 @@ class SearchController:
     def _close_cookie_dialog(self) -> None:
         """If cookie dialog is opened, close it by accepting"""
 
-        try:
-            cookie_dialog = self._driver.find_element(*self.COOKIE_DIALOG)
-            accept_button = cookie_dialog.find_elements(*self.COOKIE_ACCEPT_BUTTON)[-2]
-            accept_button.click()
-            sleep(1)
+        logger.debug("Waiting for cookie dialog...")
 
-        except (NoSuchElementException, ElementNotInteractableException, IndexError):
-            pass
+        sleep(2)
+
+        all_links = [
+            element.get_attribute("href")
+            for element in self._driver.find_elements(By.TAG_NAME, "a")
+            if isinstance(element.get_attribute("href"), str)
+        ]
+
+        for link in all_links:
+            if "policies.google.com" in link:
+                buttons = self._driver.find_elements(*self.COOKIE_DIALOG_BUTTON)[6:-2]
+
+                for button in buttons:
+                    try:
+                        if button.get_attribute("role") != "link":
+                            logger.debug(f"Clicking button {button.get_attribute('outerHTML')}")
+                            button.click()
+                            sleep(1)
+
+                            try:
+                                search_input_box = self._driver.find_element(*self.SEARCH_INPUT)
+                                search_input_box.send_keys(self._search_query)
+                                search_input_box.clear()
+                                break
+                            except (
+                                ElementNotInteractableException,
+                                StaleElementReferenceException,
+                            ):
+                                pass
+
+                    except (
+                        ElementNotInteractableException,
+                        ElementClickInterceptedException,
+                        StaleElementReferenceException,
+                    ):
+                        pass
+
+                sleep(1)
+                break
+        else:
+            logger.debug("No cookie dialog found! Continue with search...")
 
     def _is_scroll_at_the_end(self) -> bool:
         """Check if scroll is at the end
