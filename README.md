@@ -14,10 +14,12 @@ Old version of the tool can be found in the `old_version` branch.
 Run the following commands in project directory to install required packages.
 
 * `python -m venv env`
-* `source env/bin/activate` or `.\env\Scripts\activate` (for Windows)
+* `source env/bin/activate`
 * `python -m pip install -r requirements.txt`
 
-If `python` command gives error on Windows, try with `py`.
+<br>
+
+See [here](https://github.com/coskundeniz/ad_clicker/wiki/Setup-for-Windows) for setup on Windows.
 
 
 ## How to run
