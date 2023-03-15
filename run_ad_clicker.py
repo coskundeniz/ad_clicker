@@ -22,12 +22,6 @@ def get_arg_parser() -> ArgumentParser:
     """
 
     arg_parser = ArgumentParser()
-    arg_parser.add_argument("-q", "--query", help="Search query")
-    arg_parser.add_argument(
-        "-p",
-        "--proxy",
-        help="""Use the given proxy in "ip:port" or "username:password@host:port" format""",
-    )
     arg_parser.add_argument(
         "-qf",
         "--query_file",
@@ -103,6 +97,8 @@ def start_tool(
 def cleanup() -> None:
     """If there is processes remained running, terminate them"""
 
+    logger.debug("Cleaning up resources...")
+
     PROCESS_NAME = "ad_clicker"
 
     for process in psutil.process_iter():
@@ -112,14 +108,14 @@ def cleanup() -> None:
             and PROCESS_NAME in process.cmdline()[1]
             and process.cmdline()[1] != "run_ad_clicker.py"
         ):
-            logger.info(
+            logger.debug(
                 f"Terminating process: {' '.join(process.cmdline()[:2])}, PID: {process.pid}"
             )
 
             process.terminate()
 
 
-def main():
+def main() -> None:
 
     arg_parser = get_arg_parser()
     args = arg_parser.parse_args()
@@ -180,4 +176,7 @@ def main():
 
 if __name__ == "__main__":
 
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        cleanup()

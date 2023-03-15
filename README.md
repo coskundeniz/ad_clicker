@@ -115,23 +115,30 @@ optional arguments:
 
 ![Multiprocess Run](assets/ad_clicker_multiprocess.gif)
 
-* Run shell script to run the tool in loop.
+* Run the tool in loop.
 
-    * `./run_in_loop.sh`
+    * `python run_in_loop.py -qf ~/queries.txt -pf ~/proxies.txt --auth`
 
-    * Loop script requires *proxies.txt* and *queries.txt* files under home folder.
-    * Proxies should be in *username:password@host:port* format.
+    * Query and proxy files are required for this command.
     * Default wait time between runs is 60 seconds.
 
-* Run shell script to run the tool in loop with given number of browser instances.
+* Run the tool in loop with given number of browser instances.
 
-    * `./run_in_loop.sh 4`
+    * `python run_in_loop.py -qf ~/queries.txt -pf ~/proxies.txt --auth -bc 4`
 
-* Run shell script to run the tool in loop with given number of browser instances and 2 minutes wait between runs.
+* Run the tool in loop with given number of browser instances and 2 minutes wait between runs.
 
-    * `./run_in_loop.sh 4 120`
+    * `python run_in_loop.py -qf ~/queries.txt -pf ~/proxies.txt --auth -bc 2 -wt 120`
 
     * Wait time parameter should be in seconds.
+
+* Run the tool in loop with given number of browser instances and pass exclude words.
+
+    * `python run_in_loop.py -qf ~/queries.txt -pf ~/proxies.txt --auth -bc 2 -e "amazon.com,mediamarkt.com,for 2022"`
+
+* Run the tool in loop using alternative multiprocess style.
+
+    * `python run_in_loop.py -qf ~/queries.txt -pf ~/proxies.txt --auth -ms 2`
 
 ---
 
