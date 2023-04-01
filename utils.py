@@ -27,6 +27,7 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36",
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36",
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36",
     "Mozilla/5.0 (Linux; Android 10; SM-N960U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.105 Mobile Safari/537.36",
@@ -89,17 +90,18 @@ def get_location(
 
     else:
         retry_count = 0
+        max_retry_count = 5
 
-        while retry_count < 5:
+        while retry_count < max_retry_count:
 
             try:
-                response = requests.get(f"https://ipapi.co/{ip_address}/json/", timeout=2).json()
+                response = requests.get(f"https://ipapi.co/{ip_address}/json/", timeout=3).json()
                 latitude, longitude = response.get("latitude"), response.get("longitude")
 
                 if not (latitude or longitude):
                     # try a different api
                     response = requests.get(
-                        f"https://geolocation-db.com/json/{ip_address}", timeout=2
+                        f"https://geolocation-db.com/json/{ip_address}", timeout=3
                     ).json()
                     latitude, longitude = response.get("latitude"), response.get("longitude")
 
@@ -216,6 +218,10 @@ def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chrom
     chrome_options.add_argument("--disable-notifications")
     chrome_options.add_argument("--ignore-ssl-errors")
     chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument("--incognito")
+    chrome_options.add_argument("--no-first-run")
+    chrome_options.add_argument("--no-service-autorun")
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_argument(f"--user-agent={user_agent_str}")
 
     if headless:

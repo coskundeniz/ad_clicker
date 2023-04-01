@@ -104,9 +104,8 @@ class GeolocationDB:
         :returns: Database connection cursor
         """
 
-        geolocation_db = sqlite3.connect("geolocation.db")
-
         try:
+            geolocation_db = sqlite3.connect("geolocation.db")
             yield geolocation_db.cursor()
 
         except sqlite3.Error as exp:

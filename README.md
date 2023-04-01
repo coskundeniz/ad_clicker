@@ -1,6 +1,6 @@
 # ad_clicker
 
-This command-line tool clicks ads for a certain query on Google search using [undetected_chromedriver](https://github.com/ultrafunkamsterdam/undetected-chromedriver) package.
+This command-line tool clicks ads for a certain query on Google search using [undetected_chromedriver](https://github.com/ultrafunkamsterdam/undetected-chromedriver) package. Supports running multiple simultaneous browsers and running in loop.
 
 Old version of the tool can be found in the `old_version` branch.
 
@@ -11,7 +11,7 @@ Old version of the tool can be found in the `old_version` branch.
 
 ## How to setup
 
-Run the following commands in project directory to install required packages.
+Run the following commands in the project directory to install the required packages.
 
 * `python -m venv env`
 * `source env/bin/activate`
@@ -21,6 +21,7 @@ Run the following commands in project directory to install required packages.
 
 See [here](https://github.com/coskundeniz/ad_clicker/wiki/Setup-for-Windows) for setup on Windows.
 
+See [here](https://github.com/coskundeniz/ad_clicker/wiki/Creating-and-running-Docker-image) for creating the Docker image manually.
 
 ## How to run
 
@@ -139,6 +140,38 @@ optional arguments:
 * Run the tool in loop using alternative multiprocess style.
 
     * `python run_in_loop.py -qf ~/queries.txt -pf ~/proxies.txt --auth -ms 2`
+
+<br>
+
+### How to run Docker image on Linux
+
+* If you want to use the prebuilt image from DockerHub, you can use the following command.
+    * `docker pull codenineeight/ad_clicker_docker`
+
+* Run the following command on your host machine once.
+    * `xhost local:docker`
+
+* Create a volume for the input files
+    * `docker volume create ad_clicker_files`
+
+* Add your queries and proxies files to the created volume
+    * `docker run -v ad_clicker_files:/data -v <queries.txt folder path>:/mnt/host alpine cp /mnt/host/queries.txt /data/`
+    * `docker run -v ad_clicker_files:/data -v <proxies.txt folder path>:/mnt/host alpine cp /mnt/host/proxies.txt /data/`
+
+    * Check if the files are copied successfully
+
+        `docker run --rm -v ad_clicker_files:/data alpine ls -l /data`
+
+        ```sh
+        -rw-r--r--    1 root     root           165 Apr  1 09:25 proxies.txt
+        -rw-r--r--    1 root     root           216 Apr  1 09:25 queries.txt
+        ```
+
+* You can pass the arguments as before after the image name(in this case codenineeight/ad_clicker_docker)
+
+    * `docker run --rm -it --net=host -e DISPLAY=$DISPLAY -v ad_clicker_files:/data codenineeight/ad_clicker_docker run_ad_clicker.py -qf /data/queries.txt --auth -pf /data/proxies.txt -bc 2`
+
+    * `docker run --rm -it --net=host -e DISPLAY=$DISPLAY codenineeight/ad_clicker_docker ad_clicker.py -q "wireless keyboard" -p username:password@host:port --auth`
 
 ---
 
