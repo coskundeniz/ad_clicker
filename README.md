@@ -177,6 +177,7 @@ optional arguments:
 
 ## Support
 
+[https://coskundeniz.github.io/ad_clicker](https://coskundeniz.github.io/ad_clicker)
+
 If you benefit from this tool, please consider donating using the sponsor links.
 
-If you want more customized solutions, please contact via email.

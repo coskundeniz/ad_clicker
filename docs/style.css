@@ -1,0 +1,60 @@
+body {
+    background-color: #000000;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    font-size: 5em;
+    margin-bottom: 2em;
+    text-align: center;
+}
+
+.container {
+    width: 80%;
+    margin-top: 4%;
+}
+
+.header,
+.header:hover {
+    color: #FFB600;
+    text-decoration: none;
+
+}
+
+.btn {
+    color: #fff;
+    font-size: 1.4em;
+    line-height: 1.4em;
+    font-weight: bold;
+    padding: 0.8em;
+    border-radius: 0.5em;
+}
+
+.btn:hover {
+    color: #fff;
+    box-shadow: 0px 0px 10px 4px #fff;
+    -moz-box-shadow: 0px 0px 10px 4px #fff;
+    -webkit-box-shadow: 0px 0px 10px 4px #fff;
+    cursor: pointer;
+}
+
+.btn-calendar,
+.btn-calendar:hover {
+    color: #fff !important;
+    border-color: #ff8000 !important;
+    background-color: #ff8000 !important;
+}
+
+.btn-workwithme,
+.btn-workwithme:hover {
+    color: #fff !important;
+    border-color: #e94702 !important;
+    background-color: #e94702 !important;
+}
+
+.btn-donate,
+.btn-donate:hover {
+    color: #fff !important;
+    border-color: #cc0000 !important;
+    background-color: #cc0000 !important;
+}
