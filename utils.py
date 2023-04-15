@@ -265,6 +265,13 @@ def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chrom
                 {"latitude": lat, "longitude": long, "accuracy": accuracy},
             )
 
+            response = requests.get(f"http://timezonefinder.michelfe.it/api/0_{long}_{lat}")
+
+            if response.status_code == 200:
+                timezone = response.json()["tz_name"]
+                logger.debug(f"Timezone of {proxy.split('@')[1] if auth else proxy}: {timezone}")
+                driver.execute_cdp_cmd("Emulation.setTimezoneOverride", {"timezoneId": timezone})
+
     else:
         driver = undetected_chromedriver.Chrome(
             version_main=chrome_version, options=chrome_options, headless=headless
