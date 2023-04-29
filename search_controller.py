@@ -239,11 +239,17 @@ class SearchController:
         for link in all_links:
             if "policies.google.com" in link:
                 buttons = self._driver.find_elements(*self.COOKIE_DIALOG_BUTTON)[6:-2]
+                if len(buttons) < 6:
+                    buttons = self._driver.find_elements(*self.COOKIE_DIALOG_BUTTON)
 
                 for button in buttons:
                     try:
                         if button.get_attribute("role") != "link":
                             logger.debug(f"Clicking button {button.get_attribute('outerHTML')}")
+                            self._driver.execute_script(
+                                "arguments[0].scrollIntoView(true);", button
+                            )
+                            sleep(1)
                             button.click()
                             sleep(1)
 
