@@ -51,6 +51,7 @@ def get_arg_parser() -> ArgumentParser:
         help="Exclude the ads that contain given words in url or title",
     )
     arg_parser.add_argument("--id", help="Browser id for multiprocess run")
+    arg_parser.add_argument("--incognito", action="store_true", help="Run in incognito mode")
 
     return arg_parser
 
@@ -79,7 +80,7 @@ def main():
     else:
         proxy = None
 
-    driver = create_webdriver(proxy, args.auth, args.headless)
+    driver = create_webdriver(proxy, args.auth, args.headless, args.incognito)
 
     search_controller = SearchController(driver, args.query, args.ad_visit_time, args.excludes)
     ads = search_controller.search_for_ads()

@@ -26,7 +26,7 @@ See [here](https://github.com/coskundeniz/ad_clicker/wiki/Creating-and-running-D
 ## How to run
 
 ```
-usage: python ad_clicker.py [-h] [-q QUERY] [-e EXCLUDES] [-t AD_VISIT_TIME] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth]
+usage: python ad_clicker.py [-h] [-q QUERY] [-e EXCLUDES] [-t AD_VISIT_TIME] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth] [--incognito]
 
 optional arguments:
   -h, --help                                                       show this help message and exit
@@ -38,6 +38,7 @@ optional arguments:
   --auth                                                           Use proxy with username and password. If this is passed,
                                                                    proxy parameter should be in "username:password@host:port" format
   -e EXCLUDES, --excludes EXCLUDES                                 Exclude the ads that contain given words in url or title
+  --incognito                                                      Run in incognito mode
   -qf QUERY_FILE, --query_file QUERY_FILE                          Read queries to search from the given file (valid for multiprocess run)
   -bc BROWSER_COUNT, --browser_count BROWSER_COUNT                 Maximum number of browsers to run concurrently (valid for multiprocess run)
   -ms MULTIPROCESS_STYLE, --multiprocess_style MULTIPROCESS_STYLE  Style of the multiprocess run. (valid for multiprocess run)
@@ -46,7 +47,7 @@ optional arguments:
 
 ```
 
-`python ad_clicker.py -q <search query> [-e EXCLUDES] [-t ad_visit_time_in_seconds] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth]`
+`python ad_clicker.py -q <search query> [-e EXCLUDES] [-t ad_visit_time_in_seconds] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth] [--incognito]`
 
 
 ### Examples
@@ -88,6 +89,12 @@ optional arguments:
     * `python ad_clicker.py -q "wireless speaker" -e "amazon.com,mediamarkt.com,for 2022,Soundbar"`
 
     * Separate multiple exclude items with comma.
+
+* Run browser in `incognito` mode.
+
+    * `python ad_clicker.py -q "wireless speaker" --incognito`
+
+    * Note that the proxy extension is not enabled in *incognito* mode.
 
 * Run multiple browsers by taking queries and proxies with authentication from the given files.
 

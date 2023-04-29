@@ -61,6 +61,7 @@ def get_arg_parser() -> ArgumentParser:
         2: multiple browser instances for each query
         """,
     )
+    arg_parser.add_argument("--incognito", action="store_true", help="Run in incognito mode")
 
     return arg_parser
 
@@ -71,6 +72,7 @@ def start_tool(
     proxy: str,
     auth: Optional[bool] = None,
     excludes: Optional[str] = None,
+    incognito: Optional[bool] = False,
 ) -> None:
     """Start the tool
 
@@ -84,12 +86,17 @@ def start_tool(
     :param auth: Whether authentication is used or not for proxy
     :type excludes: str
     :param excludes: Words to exclude ads containing them in url or title
+    :type incognito: bool
+    :param incognito: Whether to run in incognito mode
     """
 
     command = f"python {Path('ad_clicker.py').resolve()} -q '{query}' -p '{proxy}' {'--auth' if auth else ''} --id {browser_id}"
 
     if excludes:
         command += f" -e '{excludes}'"
+
+    if incognito:
+        command += f" --incognito"
 
     subprocess.run(command, shell=True, check=True)
 
@@ -135,12 +142,20 @@ def main() -> None:
     else:
         raise SystemExit("Missing proxy file!")
 
-    # 1st way - single browser instance for each query
+    # 1st way - different query on each browser
     if args.multiprocess_style == 1:
         with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
 
             futures = [
-                executor.submit(start_tool, i, next(query), next(proxy), args.auth, args.excludes)
+                executor.submit(
+                    start_tool,
+                    i,
+                    next(query),
+                    next(proxy),
+                    args.auth,
+                    args.excludes,
+                    args.incognito,
+                )
                 for i in range(1, MAX_WORKERS + 1)
             ]
 
@@ -149,7 +164,7 @@ def main() -> None:
 
             cleanup()
 
-    # 2nd way - multiple browser instances for each query
+    # 2nd way - same query on each browser
     elif args.multiprocess_style == 2:
 
         for query in queries:
@@ -161,7 +176,9 @@ def main() -> None:
             with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
 
                 futures = [
-                    executor.submit(start_tool, i, query, next(proxy), args.auth, args.excludes)
+                    executor.submit(
+                        start_tool, i, query, next(proxy), args.auth, args.excludes, args.incognito
+                    )
                     for i in range(1, MAX_WORKERS + 1)
                 ]
 

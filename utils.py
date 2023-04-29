@@ -193,7 +193,9 @@ def get_queries(query_file: Path) -> list[str]:
     return queries
 
 
-def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chromedriver.Chrome:
+def create_webdriver(
+    proxy: str, auth: bool, headless: bool, incognito: Optional[bool] = False
+) -> undetected_chromedriver.Chrome:
     """Create Selenium Chrome webdriver instance
 
     :type proxy: str
@@ -202,6 +204,8 @@ def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chrom
     :param auth: Whether authentication is used or not for proxy
     :type headless: bool
     :param headless: Whether to use headless browser
+    :type incognito: bool
+    :param incognito: Whether to run in incognito mode
     :rtype: undetected_chromedriver.Chrome
     :returns: Selenium Chrome webdriver instance
     """
@@ -218,11 +222,13 @@ def create_webdriver(proxy: str, auth: bool, headless: bool) -> undetected_chrom
     chrome_options.add_argument("--disable-notifications")
     chrome_options.add_argument("--ignore-ssl-errors")
     chrome_options.add_argument("--start-maximized")
-    chrome_options.add_argument("--incognito")
     chrome_options.add_argument("--no-first-run")
     chrome_options.add_argument("--no-service-autorun")
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_argument(f"--user-agent={user_agent_str}")
+
+    if incognito:
+        chrome_options.add_argument("--incognito")
 
     if headless:
         chrome_options.add_argument("--no-sandbox")

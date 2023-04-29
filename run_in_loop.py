@@ -60,6 +60,7 @@ def get_arg_parser() -> ArgumentParser:
         type=int,
         help="Number of seconds to wait between runs",
     )
+    arg_parser.add_argument("--incognito", action="store_true", help="Run in incognito mode")
 
     return arg_parser
 
@@ -87,6 +88,9 @@ def main() -> None:
 
     if args.browser_count:
         command.extend(["-bc", str(args.browser_count)])
+
+    if args.incognito:
+        command.append("--incognito")
 
     command.extend(["-ms", str(args.multiprocess_style)])
 
