@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 
 *.un~
+
+geolocation.db
+proxy_auth_plugin/
