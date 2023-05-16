@@ -46,7 +46,6 @@ class SearchController:
     def __init__(
         self, driver: selenium.webdriver, query: str, ad_visit_time: int, excludes: str = None
     ) -> None:
-
         self._driver = driver
         self._ad_visit_time = ad_visit_time
         self._search_query, self._filter_words = self._process_query(query)
@@ -107,27 +106,31 @@ class SearchController:
         original_window_handle = self._driver.current_window_handle
 
         for ad in ads:
-            ad_link_element = ad[0]
-            ad_link = ad[1]
-            ad_title = ad[2]
-            logger.info(f"Clicking to [{ad_title}]({ad_link})...")
+            try:
+                ad_link_element = ad[0]
+                ad_link = ad[1]
+                ad_title = ad[2]
+                logger.info(f"Clicking to [{ad_title}]({ad_link})...")
 
-            # open link in a different tab
-            ad_link_element.send_keys(Keys.CONTROL + Keys.RETURN)
+                # open link in a different tab
+                ad_link_element.send_keys(Keys.CONTROL + Keys.RETURN)
 
-            for window_handle in self._driver.window_handles:
-                if window_handle != original_window_handle:
-                    self._driver.switch_to.window(window_handle)
-                    sleep(self._ad_visit_time)
-                    self._driver.close()
-                    break
+                for window_handle in self._driver.window_handles:
+                    if window_handle != original_window_handle:
+                        self._driver.switch_to.window(window_handle)
+                        sleep(self._ad_visit_time)
+                        self._driver.close()
+                        break
 
-            # go back to original window
-            self._driver.switch_to.window(original_window_handle)
-            sleep(1)
+                # go back to original window
+                self._driver.switch_to.window(original_window_handle)
+                sleep(1)
 
-            # scroll the page to avoid elements remain outside of the view
-            self._driver.execute_script("arguments[0].scrollIntoView(true);", ad_link_element)
+                # scroll the page to avoid elements remain outside of the view
+                self._driver.execute_script("arguments[0].scrollIntoView(true);", ad_link_element)
+
+            except StaleElementReferenceException:
+                logger.debug(f"Ad element [{ad_title}] has changed. Skipping scroll into view...")
 
     def end_search(self) -> None:
         """Close the browsers"""
