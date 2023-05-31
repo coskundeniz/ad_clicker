@@ -1,10 +1,10 @@
 # ad_clicker
 
-This command-line tool clicks ads for a certain query on Google search using [undetected_chromedriver](https://github.com/ultrafunkamsterdam/undetected-chromedriver) package. Supports running multiple simultaneous browsers and running in loop.
+This command-line tool clicks ads for a certain query on Google search using [undetected_chromedriver](https://github.com/ultrafunkamsterdam/undetected-chromedriver) package. Supports proxy, running multiple simultaneous browsers, and running in loop.
 
 Old version of the tool can be found in the `old_version` branch.
 
-* Supports Python 3.9+
+* Requires Python 3.9+
 * Requires Chrome 108+
 
 [Related post on Medium](https://python.plainenglish.io/google-ads-clicker-with-python-selenium-and-tor-a6ff8078da2a)
@@ -51,6 +51,10 @@ optional arguments:
 
 
 ### Examples
+
+```
+"~/" represents home folder on Linux/Mac. If you use Windows, don't use it. If you put your files into project directory, you can just specify the file name, otherwise you should give the full path.
+```
 
 * Search for "wireless keyboard" with the default 4 seconds visit time on clicked ad pages.
 
@@ -106,9 +110,9 @@ optional arguments:
 
     * `python run_ad_clicker.py -qf ~/queries.txt --auth -pf ~/proxies.txt -e "amazon.com,mediamarkt.com,for 2022"`
 
-* Run multiple browsers by taking queries and proxies without authentication from the given files with 10 browsers.
+* Run multiple browsers by taking queries and proxies without authentication from the given files with 5 browsers.
 
-    * `python run_ad_clicker.py -qf ~/queries.txt -pf ~/proxies.txt -bc 10`
+    * `python run_ad_clicker.py -qf ~/queries.txt -pf ~/proxies.txt -bc 5`
 
     * If -bc(--browser_count) option is not given, the number of cpu cores is used.
 

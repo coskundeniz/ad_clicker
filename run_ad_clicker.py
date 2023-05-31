@@ -90,15 +90,22 @@ def start_tool(
     :param incognito: Whether to run in incognito mode
     """
 
-    command = f"python {Path('ad_clicker.py').resolve()} -q '{query}' -p '{proxy}' {'--auth' if auth else ''} --id {browser_id}"
+    command = ["python", "ad_clicker.py"]
+
+    command.extend(["-q", query, "-p", proxy])
+
+    if auth:
+        command.append("--auth")
+
+    command.extend(["--id", str(browser_id)])
 
     if excludes:
-        command += f" -e '{excludes}'"
+        command.extend(["-e", excludes])
 
     if incognito:
-        command += f" --incognito"
+        command.append("--incognito")
 
-    subprocess.run(command, shell=True, check=True)
+    subprocess.run(command)
 
 
 def cleanup() -> None:

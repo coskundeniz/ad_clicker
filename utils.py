@@ -29,7 +29,7 @@ USER_AGENTS = [
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36",
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Linux; Android 10; SM-N960U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.105 Mobile Safari/537.36",
     "Mozilla/5.0 (Linux; Android 10; SM-A205U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.105 Mobile Safari/537.36",
     "Mozilla/5.0 (Linux; Android 10; LM-Q720) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.105 Mobile Safari/537.36",
@@ -93,7 +93,6 @@ def get_location(
         max_retry_count = 5
 
         while retry_count < max_retry_count:
-
             try:
                 response = requests.get(f"https://ipapi.co/{ip_address}/json/", timeout=3).json()
                 latitude, longitude = response.get("latitude"), response.get("longitude")
@@ -237,11 +236,9 @@ def create_webdriver(
     chrome_version = get_installed_chrome_version()
 
     if proxy:
-
         logger.info(f"Using proxy: {proxy}")
 
         if auth:
-
             if "@" not in proxy or proxy.count(":") != 2:
                 raise ValueError(
                     "Invalid proxy format! Should be in 'username:password@host:port' format"
