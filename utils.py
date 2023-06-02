@@ -70,11 +70,12 @@ def get_location(
 
     if auth:
         response = requests.get(
-            "https://ipv4.webshare.io/",
+            "https://ifconfig.co/json",
             proxies={"http": f"http://{proxy}", "https": f"http://{proxy}"},
+            timeout=5,
         )
 
-        ip_address = response.text
+        ip_address = response.json().get("ip")
     else:
         ip_address = proxy.split(":")[0]
 
@@ -94,17 +95,29 @@ def get_location(
 
         while retry_count < max_retry_count:
             try:
-                response = requests.get(f"https://ipapi.co/{ip_address}/json/", timeout=3).json()
-                latitude, longitude = response.get("latitude"), response.get("longitude")
+                response = requests.get(
+                    "https://ifconfig.co/json",
+                    proxies={"http": f"http://{proxy}", "https": f"http://{proxy}"},
+                    timeout=5,
+                )
+                latitude, longitude = (
+                    response.json().get("latitude"),
+                    response.json().get("longitude"),
+                )
 
                 if not (latitude or longitude):
                     # try a different api
                     response = requests.get(
-                        f"https://geolocation-db.com/json/{ip_address}", timeout=3
-                    ).json()
-                    latitude, longitude = response.get("latitude"), response.get("longitude")
+                        f"https://ipapi.co/{ip_address}/json/",
+                        proxies={"http": f"http://{proxy}", "https": f"http://{proxy}"},
+                        timeout=5,
+                    )
+                    latitude, longitude = (
+                        response.json().get("latitude"),
+                        response.json().get("longitude"),
+                    )
 
-                    if latitude == "Not found":
+                    if not latitude:
                         latitude = longitude = None
 
                 if latitude and longitude:
