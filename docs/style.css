@@ -5,7 +5,7 @@ body {
 
 h1 {
     font-size: 5em;
-    margin-bottom: 2em;
+    margin-bottom: 1.5em;
     text-align: center;
 }
 
@@ -18,7 +18,6 @@ h1 {
 .header:hover {
     color: #FFB600;
     text-decoration: none;
-
 }
 
 .btn {
@@ -57,4 +56,21 @@ h1 {
     color: #fff !important;
     border-color: #cc0000 !important;
     background-color: #cc0000 !important;
+}
+
+.btn-premium,
+.btn-premium:hover {
+    color: #fff !important;
+    border-color: #660000 !important;
+    background-color: #660000 !important;
+}
+
+.premium-modal {
+    color: #fff !important;
+    border-color: #450202 !important;
+    background-color: #450202 !important;
+}
+
+.email-link, .video-link {
+    color: #fff !important;
 }
