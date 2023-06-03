@@ -68,14 +68,15 @@ def get_location(
     :returns: (latitude, longitude) pair for the given proxy IP
     """
 
-    if auth:
-        response = requests.get(
-            "https://ifconfig.co/json",
-            proxies={"http": f"http://{proxy}", "https": f"http://{proxy}"},
-            timeout=5,
-        )
+    proxies_header = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
 
-        ip_address = response.json().get("ip")
+    if auth:
+        try:
+            response = requests.get("https://ipv4.webshare.io/", proxies=proxies_header, timeout=5)
+            ip_address = response.text
+        except:
+            response = requests.get("https://ifconfig.co/json", proxies=proxies_header, timeout=5)
+            ip_address = response.json().get("ip")
     else:
         ip_address = proxy.split(":")[0]
 
@@ -96,49 +97,54 @@ def get_location(
         while retry_count < max_retry_count:
             try:
                 response = requests.get(
-                    "https://ifconfig.co/json",
-                    proxies={"http": f"http://{proxy}", "https": f"http://{proxy}"},
-                    timeout=5,
+                    f"https://ipapi.co/{ip_address}/json/", proxies=proxies_header, timeout=5
                 )
                 latitude, longitude = (
                     response.json().get("latitude"),
                     response.json().get("longitude"),
                 )
+                break
+            except Exception as exp:
+                logger.debug(exp)
+                logger.debug("Continue with ifconfig.co")
 
-                if not (latitude or longitude):
-                    # try a different api
+                try:
                     response = requests.get(
-                        f"https://ipapi.co/{ip_address}/json/",
-                        proxies={"http": f"http://{proxy}", "https": f"http://{proxy}"},
-                        timeout=5,
+                        "https://ifconfig.co/json", proxies=proxies_header, timeout=5
                     )
                     latitude, longitude = (
                         response.json().get("latitude"),
                         response.json().get("longitude"),
                     )
+                    break
+                except Exception as exp:
+                    logger.debug(exp)
+                    logger.debug("Continue with ipconfig.io")
 
-                    if not latitude:
-                        latitude = longitude = None
+                    try:
+                        response = requests.get(
+                            "https://ipconfig.io/json/", proxies=proxies_header, timeout=5
+                        )
+                        latitude, longitude = (
+                            response.json()["latitude"],
+                            response.json()["longitude"],
+                        )
+                        break
+                    except Exception as exp:
+                        logger.debug(exp)
+                        logger.debug(
+                            f"Couldn't find latitude and longitude for {ip_address}! Retrying after a second..."
+                        )
 
-                if latitude and longitude:
-                    logger.debug(
-                        f"Latitude and longitude for {ip_address}: ({latitude}, {longitude})"
-                    )
-                    geolocation_db_client.save_geolocation(ip_address, latitude, longitude)
+                        retry_count += 1
+                        sleep(1)
 
-                    return latitude, longitude
+        if latitude and longitude:
+            logger.debug(f"Latitude and longitude for {ip_address}: ({latitude}, {longitude})")
+            geolocation_db_client.save_geolocation(ip_address, latitude, longitude)
 
-            except requests.RequestException as exp:
-                logger.error(exp)
-
-            logger.debug(
-                f"Couldn't find latitude and longitude for {ip_address}! Retrying after a second..."
-            )
-
-            retry_count += 1
-            sleep(1)
-
-        if not (latitude or longitude):
+            return (latitude, longitude)
+        else:
             return (None, None)
 
 
@@ -281,7 +287,9 @@ def create_webdriver(
                 {"latitude": lat, "longitude": long, "accuracy": accuracy},
             )
 
-            response = requests.get(f"http://timezonefinder.michelfe.it/api/0_{long}_{lat}")
+            response = requests.get(
+                f"http://timezonefinder.michelfe.it/api/0_{long}_{lat}", timeout=5
+            )
 
             if response.status_code == 200:
                 timezone = response.json()["tz_name"]
