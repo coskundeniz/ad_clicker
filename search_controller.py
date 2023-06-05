@@ -65,6 +65,7 @@ class SearchController:
         """
 
         logger.info(f"Starting search for '{self._search_query}'")
+        sleep(1)
 
         try:
             search_input_box = self._driver.find_element(*self.SEARCH_INPUT)
@@ -92,6 +93,7 @@ class SearchController:
         except TimeoutException:
             logger.error("Timed out waiting for results!")
             self.end_search()
+            raise SystemExit()
 
         return ad_links
 
@@ -133,10 +135,10 @@ class SearchController:
                 logger.debug(f"Ad element [{ad_title}] has changed. Skipping scroll into view...")
 
     def end_search(self) -> None:
-        """Close the browsers"""
+        """Close the browser"""
 
         if self._driver:
-            # delete all cookies before quitting
+            logger.info("Closing the browser...")
             self._driver.delete_all_cookies()
             self._driver.quit()
 

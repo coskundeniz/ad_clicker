@@ -1,4 +1,5 @@
 import random
+import traceback
 from argparse import ArgumentParser
 
 from config import logger, update_log_formats
@@ -82,14 +83,24 @@ def main():
 
     driver = create_webdriver(proxy, args.auth, args.headless, args.incognito)
 
-    search_controller = SearchController(driver, args.query, args.ad_visit_time, args.excludes)
-    ads = search_controller.search_for_ads()
+    try:
+        search_controller = SearchController(driver, args.query, args.ad_visit_time, args.excludes)
+        ads = search_controller.search_for_ads()
 
-    if not ads:
-        logger.info("No ads in the search results!")
-    else:
-        logger.info(f"Found {len(ads)} ads")
-        search_controller.click_ads(ads)
+        if not ads:
+            logger.info("No ads in the search results!")
+        else:
+            logger.info(f"Found {len(ads)} ads")
+            search_controller.click_ads(ads)
+            search_controller.end_search()
+
+    except Exception as exp:
+        logger.error("Exception occurred. See the details in the log file.")
+        message = str(exp).split("\n")[0]
+        logger.debug(f"Exception: {message}")
+        details = traceback.format_tb(exp.__traceback__)
+        logger.debug(f"Exception details: \n{''.join(details)}")
+
         search_controller.end_search()
 
 

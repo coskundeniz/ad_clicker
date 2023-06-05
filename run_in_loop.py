@@ -1,3 +1,4 @@
+import traceback
 import subprocess
 import multiprocessing
 from argparse import ArgumentParser
@@ -104,4 +105,11 @@ def main() -> None:
 
 if __name__ == "__main__":
 
-    main()
+    try:
+        main()
+    except Exception as exp:
+        logger.error("Exception occurred. See the details in the log file.")
+        message = str(exp).split("\n")[0]
+        logger.debug(f"Exception: {message}")
+        details = traceback.format_tb(exp.__traceback__)
+        logger.debug(f"Exception details: \n{''.join(details)}")

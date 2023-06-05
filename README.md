@@ -53,7 +53,9 @@ optional arguments:
 ### Examples
 
 ```
-"~/" represents home folder on Linux/Mac. If you use Windows, don't use it. If you put your files into project directory, you can just specify the file name, otherwise you should give the full path.
+"~/" represents home folder on Linux/Mac. If you use Windows, don't use it.
+If you put your files into project directory, you can just specify the file name,
+otherwise you should give the full path.
 ```
 
 * Search for "wireless keyboard" with the default 4 seconds visit time on clicked ad pages.
