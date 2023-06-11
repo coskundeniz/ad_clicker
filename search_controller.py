@@ -89,7 +89,6 @@ class SearchController:
             results_loaded = wait.until(EC.presence_of_element_located(self.RESULTS_CONTAINER))
 
             if results_loaded:
-                logger.info("Getting ad links...")
                 ad_links = self._get_ad_links()
 
         except TimeoutException:
@@ -105,6 +104,10 @@ class SearchController:
         :type ads: AdList
         :param ads: List of (ad, ad_link, ad_title) tuples
         """
+
+        # scroll to the top of the page
+        self._driver.find_element(By.TAG_NAME, "body").send_keys(Keys.HOME)
+        sleep(1)
 
         # store the ID of the original window
         original_window_handle = self._driver.current_window_handle
@@ -156,6 +159,8 @@ class SearchController:
         :returns: List of (ad, ad_link, ad_title) tuples
         """
 
+        logger.info("Getting ad links...")
+
         ads = []
 
         while not self._is_scroll_at_the_end():
@@ -176,7 +181,7 @@ class SearchController:
                 logger.debug("Could not found bottom ads!")
 
             self._driver.find_element(By.TAG_NAME, "body").send_keys(Keys.PAGE_DOWN)
-            sleep(1)
+            sleep(2)
 
         if not ads:
             return []
@@ -199,10 +204,13 @@ class SearchController:
         if self._filter_words:
             for ad in cleaned_ads:
                 ad_title = ad.find_element(*self.AD_TITLE).text.lower()
+                ad_link = ad.get_attribute("data-pcu")
 
                 for word in self._filter_words:
-                    if word in ad.get_attribute("data-pcu") or word in ad_title:
-                        filtered_ads.append(ad)
+                    if word in ad_link or word in ad_title:
+                        if ad not in filtered_ads:
+                            logger.debug(f"Filtering [{ad_title}]: {ad_link}")
+                            filtered_ads.append(ad)
         else:
             filtered_ads = cleaned_ads
 
