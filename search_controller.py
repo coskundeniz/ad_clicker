@@ -67,6 +67,8 @@ class SearchController:
         logger.info(f"Starting search for '{self._search_query}'")
         sleep(1)
 
+        self._close_cookie_dialog()
+
         try:
             search_input_box = self._driver.find_element(*self.SEARCH_INPUT)
             search_input_box.send_keys(self._search_query, Keys.ENTER)
@@ -233,7 +235,7 @@ class SearchController:
 
         logger.debug("Waiting for cookie dialog...")
 
-        sleep(2)
+        sleep(3)
 
         all_links = [
             element.get_attribute("href")
