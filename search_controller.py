@@ -1,3 +1,20 @@
+"""
+BİR ADAM
+
+Korku dağlarının yürekçisi,
+Ölüm denizlerinin kürekçisi;
+Öyle suskun oturuyor şişesinin başında,
+İçtiğinin hem hırsızı, hem bekçisi,
+
+Onu kırmış olmalı yaşamında birisi.
+Dinledikçe susması, düşündükçe susması..
+Tek başına iki kişi olmuş kendisiyle
+gölgesi,
+Heykelini yontuyor yalnızlığın ustası.
+
+                            -- Özdemir Asaf
+"""
+
 import random
 from time import sleep
 

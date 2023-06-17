@@ -1,3 +1,20 @@
+"""
+HAYAT BÖYLE ZATEN
+
+Bu evin bir köpeği vardı;
+Kıvır kıvırdı, adı Çinçon'du, öldü.
+Bir de kedisi vardı: Maviş,
+Kayboldu.
+Evin kızı gelin oldu,
+Küçük Bey sınıfı geçti.
+Daha böyle acı, tatlı
+Neler oldu bir yıl içinde!
+Oldu ya, olanların hepsi böyle...
+Hayat böyle zaten!..
+
+                        -- Orhan Veli
+"""
+
 import sys
 import random
 import subprocess

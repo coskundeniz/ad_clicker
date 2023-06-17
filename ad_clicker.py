@@ -1,3 +1,14 @@
+"""
+BAŞLANGIÇ
+
+Doğanın bana verdiği bu ödülden
+Çıldırıp yitmemek için
+İki insan gibi kaldım
+Birbiriyle konuşan iki insan
+
+            -- Edip Cansever
+"""
+
 import random
 import traceback
 from argparse import ArgumentParser
@@ -53,8 +64,32 @@ def get_arg_parser() -> ArgumentParser:
     )
     arg_parser.add_argument("--id", help="Browser id for multiprocess run")
     arg_parser.add_argument("--incognito", action="store_true", help="Run in incognito mode")
+    arg_parser.add_argument("--poem", help="Get the poem for the given module")
 
     return arg_parser
+
+
+def get_poem(module_name: str) -> None:
+    """Get the poem for the given module
+
+    :type module_name: str
+    :param module_name: Module name without .py extension
+    """
+
+    import sys
+    import importlib
+
+    module = module_name if module_name != "ad_clicker" else __name__
+
+    if module in ["run_ad_clicker", "run_in_loop"]:
+        importlib.import_module(module)
+
+    try:
+        module_doc = sys.modules[module].__doc__
+        print(f"{module_doc}\n")
+
+    except KeyError:
+        logger.error("No module exists with this name!")
 
 
 def main():
@@ -62,6 +97,9 @@ def main():
 
     arg_parser = get_arg_parser()
     args = arg_parser.parse_args()
+
+    if args.poem:
+        get_poem(args.poem)
 
     if args.id:
         update_log_formats(args.id)

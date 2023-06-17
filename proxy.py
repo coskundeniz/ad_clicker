@@ -1,3 +1,26 @@
+"""
+Gölge kuyusu
+
+gölgeler çıkar kuyudan
+karışırlar üçe beşe
+adımları dolaşır
+takipte izde
+
+ev dediğin kapan
+yuvadır korkulara
+saklanır
+sokaktan sıkılan, bıkan
+
+nice sonra
+sokaklara vuran
+yıllarla kayıplar
+
+gölgedeki kuyudan çıkar
+evdekilerden saklanan
+
+            -- Murathan Mungan
+"""
+
 from pathlib import Path
 
 from selenium.webdriver import ChromeOptions

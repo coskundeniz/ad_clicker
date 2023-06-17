@@ -1,3 +1,22 @@
+"""
+Yarım somunun var mı? Bir ufak da evin?
+Kimsenin kulu kölesi değil misin?
+Kimsenin sırtından geçindiğin de yok ya?
+Keyfine bak, en hoş dünyası olan sensin.
+
+Bu günden yarınlara senin elin erişmez,
+Yarını düşünüşün boş bir hülya, bunu bil!
+Eğer bir parça aklın başındaysa şu anı
+Ziyan etme, ömrünün kalanı belli değil...
+
+Geçmiş gitmiş bir günü artık ne yâd edersin?
+Gelmeyen yarın için niye feryat edersin?
+Bina kurma geçmişin, gelmemişin üstüne;
+Şu an hoş ol, ömrü neden berbat edersin?...
+
+                                -- Ömer Hayyam
+"""
+
 from typing import Optional
 from contextlib import contextmanager
 

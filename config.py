@@ -1,3 +1,14 @@
+"""
+Ölüler ki bir gün gömülür
+İçimizdeki ölüler, dışımızdaki ölüler
+İnsan yaşıyorken özgürdür
+İnsan
+    yaşıyorken
+            özgürdür
+
+                -- Edip Cansever
+"""
+
 import logging
 
 LOG_FILENAME = "adclicker.log"

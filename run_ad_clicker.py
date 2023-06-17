@@ -1,3 +1,17 @@
+"""
+GELİRLİ ŞİİR
+
+İstanbul'dan ayva da gelir, nar gelir,
+Döndüm baktım, bir edalı yâr gelir,
+Gelir desen dar gelir;
+Gün aşırı alacaklılar gelir.
+Anam anam,
+Dayanamam,
+Bu iş bana zor gelir.
+
+                -- Orhan Veli
+"""
+
 import psutil
 import random
 import traceback

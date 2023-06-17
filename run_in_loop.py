@@ -1,3 +1,31 @@
+"""
+Yavaş Yavaş Ölürler
+
+Yavaş yavaş ölürler
+Seyahat etmeyenler.
+Yavaş yavaş ölürler
+Okumayanlar, müzik dinlemeyenler,
+Vicdanlarında hoşgörüyü barındıramayanlar.
+Yavaş yavaş ölürler
+Alışkanlıklarına esir olanlar,
+Her gün aynı yolları yürüyenler,
+Ufuklarını genişletmeyen ve değiştirmeyenler,
+Elbiselerinin rengini değiştirme riskine bile
+girmeyenler,
+Bir yabancı ile konuşmayanlar.
+Yavaş yavaş ölürler
+Heyecanlardan kaçınanlar,
+Tamir edilen kırık kalplerin gözlerindeki pırıltıyı
+görmek istemekten kaçınanlar.
+Yavaş yavaş ölürler
+Aşkta veya işte bedbaht olup yön değiştirmeyenler,
+Rüyalarını gerçekleştirmek için risk almayanlar,
+Hayatlarında bir kez dahi mantıklı tavsiyelerin
+dışına çıkmamış olanlar.
+
+                                -- Pablo Neruda
+"""
+
 import traceback
 import subprocess
 import multiprocessing
