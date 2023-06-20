@@ -88,18 +88,34 @@ def get_location(
     proxies_header = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
 
     if auth:
-        try:
-            response = requests.get("https://ipv4.webshare.io/", proxies=proxies_header, timeout=5)
-            ip_address = response.text
-        except:
-            response = requests.get("https://ifconfig.co/json", proxies=proxies_header, timeout=5)
-            ip_address = response.json().get("ip")
+        for _ in range(2):
+            try:
+                response = requests.get(
+                    "https://ipv4.webshare.io/", proxies=proxies_header, timeout=5
+                )
+                ip_address = response.text
+                break
+
+            except:
+                try:
+                    response = requests.get(
+                        "https://ifconfig.co/json", proxies=proxies_header, timeout=5
+                    )
+                    ip_address = response.json().get("ip")
+                    break
+
+                except:
+                    logger.debug("Request will be resend after 60 seconds")
+                    sleep(60)
     else:
         ip_address = proxy.split(":")[0]
 
     logger.info(f"Connecting with IP: {ip_address}")
 
     db_result = geolocation_db_client.query_geolocation(ip_address)
+
+    latitude = None
+    longitude = None
 
     if db_result:
         latitude, longitude = db_result
@@ -110,6 +126,7 @@ def get_location(
     else:
         retry_count = 0
         max_retry_count = 5
+        sleep_seconds = 5
 
         while retry_count < max_retry_count:
             try:
@@ -149,12 +166,14 @@ def get_location(
                         break
                     except Exception as exp:
                         logger.debug(exp)
-                        logger.debug(
-                            f"Couldn't find latitude and longitude for {ip_address}! Retrying after a second..."
+                        logger.error(
+                            f"Couldn't find latitude and longitude for {ip_address}! "
+                            f"Retrying after {sleep_seconds} seconds..."
                         )
 
                         retry_count += 1
-                        sleep(1)
+                        sleep(sleep_seconds)
+                        sleep_seconds *= 2
 
         if latitude and longitude:
             logger.debug(f"Latitude and longitude for {ip_address}: ({latitude}, {longitude})")
