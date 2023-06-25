@@ -19,6 +19,7 @@ import random
 from time import sleep
 
 import selenium
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -137,12 +138,21 @@ class SearchController:
                 logger.info(f"Clicking to [{ad_title}]({ad_link})...")
 
                 # open link in a different tab
-                ad_link_element.send_keys(Keys.CONTROL + Keys.RETURN)
+                actions = ActionChains(self._driver)
+                actions.move_to_element(ad_link_element)
+                actions.key_down(Keys.CONTROL)
+                actions.click()
+                actions.key_up(Keys.CONTROL)
+                actions.perform()
+                sleep(0.5)
 
                 for window_handle in self._driver.window_handles:
                     if window_handle != original_window_handle:
                         self._driver.switch_to.window(window_handle)
                         sleep(self._ad_visit_time)
+
+                        logger.debug(f"Current url on new tab: {self._driver.current_url}")
+
                         self._driver.close()
                         break
 
