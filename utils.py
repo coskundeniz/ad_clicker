@@ -87,9 +87,12 @@ def get_location(
 
     proxies_header = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
 
+    ip_address = ""
+
     if auth:
-        for _ in range(2):
+        for cycle in range(2):
             try:
+                logger.debug("Trying with ipv4.webshare.io...")
                 response = requests.get(
                     "https://ipv4.webshare.io/", proxies=proxies_header, timeout=5
                 )
@@ -97,18 +100,31 @@ def get_location(
                 break
 
             except:
+                logger.debug("Failed with ipv4.webshare.io")
+
                 try:
+                    logger.debug("Trying with ipconfig.io...")
                     response = requests.get(
-                        "https://ifconfig.co/json", proxies=proxies_header, timeout=5
+                        "https://ipconfig.io/json", proxies=proxies_header, timeout=5
                     )
                     ip_address = response.json().get("ip")
                     break
 
                 except:
+                    logger.debug("Failed with ipconfig.io")
+
+                    if cycle == 1:
+                        break
+
                     logger.debug("Request will be resend after 60 seconds")
                     sleep(60)
     else:
         ip_address = proxy.split(":")[0]
+
+    if not ip_address:
+        logger.debug(f"Couldn't verify IP address for {proxy}!")
+        logger.info("Geolocation won't be set")
+        return (None, None)
 
     logger.info(f"Connecting with IP: {ip_address}")
 
