@@ -15,9 +15,7 @@ Hayat böyle zaten!..
                         -- Orhan Veli
 """
 
-import sys
 import random
-import subprocess
 from pathlib import Path
 from time import sleep
 from typing import Optional
@@ -200,46 +198,6 @@ def get_location(
             return (None, None)
 
 
-def get_installed_chrome_version() -> int:
-    """Get major version for the Chrome installed on the system
-
-    :rtype: int
-    :returns: Chrome major version
-    """
-
-    major_version = None
-
-    try:
-        if sys.platform == "win32":
-            chrome_exe_path = undetected_chromedriver.find_chrome_executable()
-            version_command = (
-                f"wmic datafile where name='{chrome_exe_path}' get Version /value".replace(
-                    "\\", "\\\\"
-                )
-            )
-            chrome_version = subprocess.check_output(version_command, shell=True)
-            major_version = int(chrome_version.decode("utf-8").strip().split(".")[0].split("=")[1])
-
-        elif sys.platform == "darwin":
-            chrome_version = subprocess.run(
-                "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --version",
-                shell=True,
-                capture_output=True,
-            )
-            major_version = int(chrome_version.stdout.decode("utf-8").split()[-1].split(".")[0])
-
-        else:
-            chrome_version = subprocess.run(["google-chrome", "--version"], capture_output=True)
-            major_version = int(str(chrome_version.stdout).split()[-2].split(".")[0])
-
-        logger.debug(f"Installed Chrome version: {major_version}")
-
-    except subprocess.SubprocessError:
-        logger.error("Failed to get Chrome version! Latest version will be used.")
-
-    return major_version
-
-
 def get_queries(query_file: Path) -> list[str]:
     """Get queries from file
 
@@ -304,8 +262,6 @@ def create_webdriver(
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--window-size=1920,1080")
 
-    chrome_version = get_installed_chrome_version()
-
     if proxy:
         logger.info(f"Using proxy: {proxy}")
 
@@ -323,11 +279,7 @@ def create_webdriver(
         else:
             chrome_options.add_argument(f"--proxy-server={proxy}")
 
-        driver = undetected_chromedriver.Chrome(
-            version_main=chrome_version,
-            options=chrome_options,
-            headless=headless,
-        )
+        driver = undetected_chromedriver.Chrome(options=chrome_options, headless=headless)
 
         # set geolocation of the browser according to IP address
         accuracy = 90
@@ -349,8 +301,6 @@ def create_webdriver(
                 driver.execute_cdp_cmd("Emulation.setTimezoneOverride", {"timezoneId": timezone})
 
     else:
-        driver = undetected_chromedriver.Chrome(
-            version_main=chrome_version, options=chrome_options, headless=headless
-        )
+        driver = undetected_chromedriver.Chrome(options=chrome_options, headless=headless)
 
     return driver
