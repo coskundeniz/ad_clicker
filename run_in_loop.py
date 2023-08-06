@@ -124,7 +124,6 @@ def main() -> None:
     command.extend(["-ms", str(args.multiprocess_style)])
 
     while True:
-        logger.info(f"Running with {args.browser_count} browsers...")
         subprocess.run(command)
 
         logger.info(f"Sleeping {args.wait_time} seconds...")

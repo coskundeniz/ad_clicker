@@ -17,12 +17,12 @@ import random
 import traceback
 import subprocess
 import multiprocessing
-from typing import Optional
-from itertools import cycle
-from concurrent.futures import ProcessPoolExecutor, wait
-
 from argparse import ArgumentParser
+from concurrent.futures import ProcessPoolExecutor, wait
+from itertools import cycle
 from pathlib import Path
+from time import sleep
+from typing import Optional
 
 from config import logger
 from proxy import get_proxies
@@ -85,6 +85,7 @@ def start_tool(
     browser_id: int,
     query: str,
     proxy: str,
+    start_timeout: float,
     auth: Optional[bool] = None,
     excludes: Optional[str] = None,
     incognito: Optional[bool] = False,
@@ -97,6 +98,8 @@ def start_tool(
     :param query: Search query
     :type proxy: str
     :param proxy: Proxy to use in ip:port or user:pass@host:port format
+    :type start_timeout: float
+    :param start_timeout: Start timeout to avoid race condition in driver patching
     :type auth: bool
     :param auth: Whether authentication is used or not for proxy
     :type excludes: str
@@ -104,6 +107,8 @@ def start_tool(
     :type incognito: bool
     :param incognito: Whether to run in incognito mode
     """
+
+    sleep(start_timeout)
 
     command = ["python", "ad_clicker.py"]
 
@@ -149,7 +154,14 @@ def main() -> None:
     arg_parser = get_arg_parser()
     args = arg_parser.parse_args()
 
+    multi_browser_flag_file = Path(".MULTI_BROWSERS_IN_USE")
+    multi_browser_flag_file.unlink(missing_ok=True)
+
     MAX_WORKERS = args.browser_count
+
+    if MAX_WORKERS > 1:
+        logger.debug(f"Creating {multi_browser_flag_file} flag file...")
+        multi_browser_flag_file.touch()
 
     if args.query_file:
         queries = get_queries(args.query_file)
@@ -164,6 +176,8 @@ def main() -> None:
     else:
         raise SystemExit("Missing proxy file!")
 
+    logger.info(f"Running with {MAX_WORKERS} browser{'s' if MAX_WORKERS > 1 else ''}...")
+
     # 1st way - different query on each browser
     if args.multiprocess_style == 1:
         with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -174,6 +188,7 @@ def main() -> None:
                     i,
                     next(query),
                     next(proxy),
+                    i * 0.5,
                     args.auth,
                     args.excludes,
                     args.incognito,
@@ -199,7 +214,14 @@ def main() -> None:
 
                 futures = [
                     executor.submit(
-                        start_tool, i, query, next(proxy), args.auth, args.excludes, args.incognito
+                        start_tool,
+                        i,
+                        query,
+                        next(proxy),
+                        i * 0.5,
+                        args.auth,
+                        args.excludes,
+                        args.incognito,
                     )
                     for i in range(1, MAX_WORKERS + 1)
                 ]

@@ -132,3 +132,5 @@ dmypy.json
 
 geolocation.db
 proxy_auth_plugin/
+
+.MULTI_BROWSERS_IN_USE

@@ -121,6 +121,8 @@ def main():
 
     driver = create_webdriver(proxy, args.auth, args.headless, args.incognito)
 
+    search_controller = None
+
     try:
         search_controller = SearchController(driver, args.query, args.ad_visit_time, args.excludes)
         ads = search_controller.search_for_ads()
@@ -139,7 +141,8 @@ def main():
         details = traceback.format_tb(exp.__traceback__)
         logger.debug(f"Exception details: \n{''.join(details)}")
 
-        search_controller.end_search()
+        if search_controller:
+            search_controller.end_search()
 
 
 if __name__ == "__main__":

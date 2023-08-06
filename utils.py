@@ -15,6 +15,8 @@ Hayat böyle zaten!..
                         -- Orhan Veli
 """
 
+import os
+import sys
 import random
 from pathlib import Path
 from time import sleep
@@ -262,6 +264,13 @@ def create_webdriver(
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--window-size=1920,1080")
 
+    multi_browser_flag_file = Path(".MULTI_BROWSERS_IN_USE")
+    multi_procs_enabled = multi_browser_flag_file.exists()
+    driver_exe_path = None
+
+    if multi_procs_enabled:
+        driver_exe_path = _get_driver_exe_path()
+
     if proxy:
         logger.info(f"Using proxy: {proxy}")
 
@@ -279,7 +288,14 @@ def create_webdriver(
         else:
             chrome_options.add_argument(f"--proxy-server={proxy}")
 
-        driver = undetected_chromedriver.Chrome(options=chrome_options, headless=headless)
+        driver = undetected_chromedriver.Chrome(
+            driver_executable_path=(
+                driver_exe_path if multi_procs_enabled and Path(driver_exe_path).exists() else None
+            ),
+            options=chrome_options,
+            headless=headless,
+            user_multi_procs=multi_procs_enabled,
+        )
 
         # set geolocation of the browser according to IP address
         accuracy = 90
@@ -301,6 +317,48 @@ def create_webdriver(
                 driver.execute_cdp_cmd("Emulation.setTimezoneOverride", {"timezoneId": timezone})
 
     else:
-        driver = undetected_chromedriver.Chrome(options=chrome_options, headless=headless)
+        driver = undetected_chromedriver.Chrome(
+            driver_executable_path=(
+                driver_exe_path if multi_procs_enabled and Path(driver_exe_path).exists() else None
+            ),
+            options=chrome_options,
+            headless=headless,
+            user_multi_procs=multi_procs_enabled,
+        )
 
     return driver
+
+
+def _get_driver_exe_path() -> str:
+    """Get the path for the chromedriver executable to avoid downloading and patching each time
+
+    :rtype: str
+    :returns: Absoulute path of the chromedriver executable
+    """
+
+    platform = sys.platform
+    prefix = "undetected"
+    exe_name = "chromedriver%s"
+
+    if platform.endswith("win32"):
+        exe_name %= ".exe"
+    if platform.endswith(("linux", "linux2")):
+        exe_name %= ""
+    if platform.endswith("darwin"):
+        exe_name %= ""
+
+    if platform.endswith("win32"):
+        dirpath = "~/appdata/roaming/undetected_chromedriver"
+    elif "LAMBDA_TASK_ROOT" in os.environ:
+        dirpath = "/tmp/undetected_chromedriver"
+    elif platform.startswith(("linux", "linux2")):
+        dirpath = "~/.local/share/undetected_chromedriver"
+    elif platform.endswith("darwin"):
+        dirpath = "~/Library/Application Support/undetected_chromedriver"
+    else:
+        dirpath = "~/.undetected_chromedriver"
+
+    driver_exe_folder = os.path.abspath(os.path.expanduser(dirpath))
+    driver_exe_path = os.path.join(driver_exe_folder, "_".join([prefix, exe_name]))
+
+    return driver_exe_path
