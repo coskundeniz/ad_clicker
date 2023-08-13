@@ -25,6 +25,8 @@ See [here](https://github.com/coskundeniz/ad_clicker/wiki/Creating-and-running-D
 
 ## How to run
 
+* You need to see `(env)` at the beginning of your command prompt that is showing virtual environment is activated.
+
 ```
 usage: python ad_clicker.py [-h] [-q QUERY] [-e EXCLUDES] [-t AD_VISIT_TIME] [--headless] [-p PROXY] [-pf PROXY_FILE] [--auth] [--incognito]
 

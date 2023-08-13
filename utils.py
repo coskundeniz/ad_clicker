@@ -92,32 +92,39 @@ def get_location(
     if auth:
         for cycle in range(2):
             try:
-                logger.debug("Trying with ipv4.webshare.io...")
-                response = requests.get(
-                    "https://ipv4.webshare.io/", proxies=proxies_header, timeout=5
-                )
+                response = requests.get("https://api.ipify.org", proxies=proxies_header)
                 ip_address = response.text
                 break
 
             except:
-                logger.debug("Failed with ipv4.webshare.io")
-
+                logger.debug("Failed with api.ipify.org")
                 try:
-                    logger.debug("Trying with ipconfig.io...")
+                    logger.debug("Trying with ipv4.webshare.io...")
                     response = requests.get(
-                        "https://ipconfig.io/json", proxies=proxies_header, timeout=5
+                        "https://ipv4.webshare.io/", proxies=proxies_header, timeout=5
                     )
-                    ip_address = response.json().get("ip")
+                    ip_address = response.text
                     break
 
                 except:
-                    logger.debug("Failed with ipconfig.io")
+                    logger.debug("Failed with ipv4.webshare.io")
 
-                    if cycle == 1:
+                    try:
+                        logger.debug("Trying with ipconfig.io...")
+                        response = requests.get(
+                            "https://ipconfig.io/json", proxies=proxies_header, timeout=5
+                        )
+                        ip_address = response.json().get("ip")
                         break
 
-                    logger.debug("Request will be resend after 60 seconds")
-                    sleep(60)
+                    except:
+                        logger.debug("Failed with ipconfig.io")
+
+                        if cycle == 1:
+                            break
+
+                        logger.debug("Request will be resend after 60 seconds")
+                        sleep(60)
     else:
         ip_address = proxy.split(":")[0]
 
