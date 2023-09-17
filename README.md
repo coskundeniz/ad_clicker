@@ -92,6 +92,8 @@ otherwise you should give the full path.
     "wireless speaker @ amazon  # ebay" take "wireless speaker" as search query and "amazon" and "ebay"
     as filter words.
 
+    * If you will give a target domain as filter word, don't use "http" or "www" parts in it. Use like "query@domainname.com" or even "query@domainname". Keep it as short as possible to get a match.
+
 * Search for "wireless speaker" and click links except the ones containing the given words in url or title.
 
     * `python ad_clicker.py -q "wireless speaker" -e "amazon.com,mediamarkt.com,for 2022,Soundbar"`
@@ -192,7 +194,7 @@ otherwise you should give the full path.
 
 ---
 
-## Support
+## Support & Premium Version
 
 [https://coskundeniz.github.io/ad_clicker](https://coskundeniz.github.io/ad_clicker)
 
