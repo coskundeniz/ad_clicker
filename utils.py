@@ -129,7 +129,7 @@ def get_location(
         ip_address = proxy.split(":")[0]
 
     if not ip_address:
-        logger.debug(f"Couldn't verify IP address for {proxy}!")
+        logger.info(f"Couldn't verify IP address for {proxy}!")
         logger.info("Geolocation won't be set")
         return (None, None)
 
@@ -160,6 +160,10 @@ def get_location(
                     response.json().get("latitude"),
                     response.json().get("longitude"),
                 )
+
+                if not (latitude and longitude):
+                    raise Exception("Failed with https://ipapi.co")
+
                 break
             except Exception as exp:
                 logger.debug(exp)
@@ -173,6 +177,10 @@ def get_location(
                         response.json().get("latitude"),
                         response.json().get("longitude"),
                     )
+
+                    if not (latitude and longitude):
+                        raise Exception("Failed with https://ifconfig.co/json")
+
                     break
                 except Exception as exp:
                     logger.debug(exp)
@@ -186,6 +194,10 @@ def get_location(
                             response.json()["latitude"],
                             response.json()["longitude"],
                         )
+
+                        if not (latitude and longitude):
+                            raise Exception("Failed with https://ipconfig.io/json")
+
                         break
                     except Exception as exp:
                         logger.debug(exp)
@@ -204,6 +216,7 @@ def get_location(
 
             return (latitude, longitude)
         else:
+            logger.error(f"Couldn't find latitude and longitude for {ip_address}!")
             return (None, None)
 
 
