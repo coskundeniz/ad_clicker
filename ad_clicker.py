@@ -132,15 +132,18 @@ def main():
         else:
             logger.info(f"Found {len(ads)} ads")
             search_controller.click_ads(ads)
-            search_controller.end_search()
 
     except Exception as exp:
         logger.error("Exception occurred. See the details in the log file.")
+
         message = str(exp).split("\n")[0]
         logger.debug(f"Exception: {message}")
         details = traceback.format_tb(exp.__traceback__)
         logger.debug(f"Exception details: \n{''.join(details)}")
 
+        logger.debug(f"Exception cause: {exp.__cause__}") if exp.__cause__ else None
+
+    finally:
         if search_controller:
             search_controller.end_search()
 

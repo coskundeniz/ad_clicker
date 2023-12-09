@@ -12,7 +12,6 @@ Bu iş bana zor gelir.
                 -- Orhan Veli
 """
 
-import psutil
 import random
 import traceback
 import subprocess
@@ -128,27 +127,6 @@ def start_tool(
     subprocess.run(command)
 
 
-def cleanup() -> None:
-    """If there is processes remained running, terminate them"""
-
-    logger.debug("Cleaning up resources...")
-
-    PROCESS_NAME = "ad_clicker"
-
-    for process in psutil.process_iter():
-
-        if (
-            process.name() == "python"
-            and PROCESS_NAME in process.cmdline()[1]
-            and process.cmdline()[1] != "run_ad_clicker.py"
-        ):
-            logger.debug(
-                f"Terminating process: {' '.join(process.cmdline()[:2])}, PID: {process.pid}"
-            )
-
-            process.terminate()
-
-
 def main() -> None:
 
     arg_parser = get_arg_parser()
@@ -199,8 +177,6 @@ def main() -> None:
             # wait for all tasks to complete
             _, _ = wait(futures)
 
-            cleanup()
-
     # 2nd way - same query on each browser
     elif args.multiprocess_style == 2:
 
@@ -229,8 +205,6 @@ def main() -> None:
                 # wait for all tasks to complete
                 _, _ = wait(futures)
 
-                cleanup()
-
     else:
         logger.error("Invalid multiprocess style!")
 
@@ -239,13 +213,12 @@ if __name__ == "__main__":
 
     try:
         main()
-    except KeyboardInterrupt:
-        cleanup()
+
     except Exception as exp:
         logger.error("Exception occurred. See the details in the log file.")
+
         message = str(exp).split("\n")[0]
         logger.debug(f"Exception: {message}")
         details = traceback.format_tb(exp.__traceback__)
         logger.debug(f"Exception details: \n{''.join(details)}")
 
-        cleanup()

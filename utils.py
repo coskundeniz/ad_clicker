@@ -94,20 +94,29 @@ def get_location(
             try:
                 response = requests.get("https://api.ipify.org", proxies=proxies_header)
                 ip_address = response.text
+
+                if not ip_address:
+                    raise Exception("Failed with https://api.ipify.org")
+
                 break
 
-            except:
-                logger.debug("Failed with api.ipify.org")
+            except Exception as exp:
+                logger.debug(exp)
+
                 try:
                     logger.debug("Trying with ipv4.webshare.io...")
                     response = requests.get(
                         "https://ipv4.webshare.io/", proxies=proxies_header, timeout=5
                     )
                     ip_address = response.text
+
+                    if not ip_address:
+                        raise Exception("Failed with https://ipv4.webshare.io")
+
                     break
 
-                except:
-                    logger.debug("Failed with ipv4.webshare.io")
+                except Exception as exp:
+                    logger.debug(exp)
 
                     try:
                         logger.debug("Trying with ipconfig.io...")
@@ -115,10 +124,14 @@ def get_location(
                             "https://ipconfig.io/json", proxies=proxies_header, timeout=5
                         )
                         ip_address = response.json().get("ip")
+
+                        if not ip_address:
+                            raise Exception("Failed with https://ipconfig.io/json")
+
                         break
 
-                    except:
-                        logger.debug("Failed with ipconfig.io")
+                    except Exception as exp:
+                        logger.debug(exp)
 
                         if cycle == 1:
                             break
@@ -276,6 +289,14 @@ def create_webdriver(
     chrome_options.add_argument("--no-service-autorun")
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_argument(f"--user-agent={user_agent_str}")
+
+    # disable WebRTC IP tracking
+    webrtc_preferences = {
+        "webrtc.ip_handling_policy": "disable_non_proxied_udp",
+        "webrtc.multiple_routes_enabled": False,
+        "webrtc.nonproxied_udp_enabled": False,
+    }
+    chrome_options.add_experimental_option("prefs", webrtc_preferences)
 
     if incognito:
         chrome_options.add_argument("--incognito")

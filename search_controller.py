@@ -171,8 +171,16 @@ class SearchController:
 
         if self._driver:
             logger.info("Closing the browser...")
-            self._driver.delete_all_cookies()
-            self._driver.quit()
+
+            try:
+                self._driver.delete_all_cookies()
+                self._driver.quit()
+
+            except OSError as exp:
+                logger.debug(exp)
+
+            self._driver = None
+
 
     def _load(self) -> None:
         """Load Google main page"""
