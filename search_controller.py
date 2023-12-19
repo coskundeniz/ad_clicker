@@ -167,7 +167,7 @@ class SearchController:
                     sleep(0.5)
 
                 else:
-                    logger.debug("Opened link in new a tab. Switching to tab...")
+                    logger.debug("Opened link in a new tab. Switching to tab...")
 
                 for window_handle in self._driver.window_handles:
                     if window_handle != original_window_handle:
