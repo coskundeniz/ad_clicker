@@ -15,6 +15,7 @@ Heykelini yontuyor yalnızlığın ustası.
                             -- Özdemir Asaf
 """
 
+import sys
 import random
 from time import sleep
 
@@ -127,6 +128,10 @@ class SearchController:
         self._driver.find_element(By.TAG_NAME, "body").send_keys(Keys.HOME)
         sleep(1)
 
+        platform = sys.platform
+
+        control_command_key = Keys.COMMAND if platform.endswith("darwin") else Keys.CONTROL
+
         # store the ID of the original window
         original_window_handle = self._driver.current_window_handle
 
@@ -140,11 +145,29 @@ class SearchController:
                 # open link in a different tab
                 actions = ActionChains(self._driver)
                 actions.move_to_element(ad_link_element)
-                actions.key_down(Keys.CONTROL)
+                actions.key_down(control_command_key)
                 actions.click()
-                actions.key_up(Keys.CONTROL)
+                actions.key_up(control_command_key)
                 actions.perform()
                 sleep(0.5)
+
+                if len(self._driver.window_handles) != 2:
+                    logger.debug("Couldn't click! Scrolling element into view...")
+
+                    self._driver.execute_script(
+                        "arguments[0].scrollIntoView(true);", ad_link_element
+                    )
+
+                    actions = ActionChains(self._driver)
+                    actions.move_to_element(ad_link_element)
+                    actions.key_down(control_command_key)
+                    actions.click()
+                    actions.key_up(control_command_key)
+                    actions.perform()
+                    sleep(0.5)
+
+                else:
+                    logger.debug("Opened link in new a tab. Switching to tab...")
 
                 for window_handle in self._driver.window_handles:
                     if window_handle != original_window_handle:
@@ -180,7 +203,6 @@ class SearchController:
                 logger.debug(exp)
 
             self._driver = None
-
 
     def _load(self) -> None:
         """Load Google main page"""
