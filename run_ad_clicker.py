@@ -47,6 +47,13 @@ def get_arg_parser() -> ArgumentParser:
         help="Select a proxy from the given file",
     )
     arg_parser.add_argument(
+        "-l",
+        "--max_scroll_limit",
+        default=0,
+        type=int,
+        help="Number of maximum scrolls on the search results page",
+    )
+    arg_parser.add_argument(
         "-e",
         "--excludes",
         help="Exclude the ads that contain given words in url or title",
@@ -85,6 +92,7 @@ def start_tool(
     query: str,
     proxy: str,
     start_timeout: float,
+    max_scroll_limit: int,
     auth: Optional[bool] = None,
     excludes: Optional[str] = None,
     incognito: Optional[bool] = False,
@@ -99,6 +107,8 @@ def start_tool(
     :param proxy: Proxy to use in ip:port or user:pass@host:port format
     :type start_timeout: float
     :param start_timeout: Start timeout to avoid race condition in driver patching
+    :type max_scroll_limit: int
+    :param max_scroll_limit: Number of maximum scrolls on the search results page
     :type auth: bool
     :param auth: Whether authentication is used or not for proxy
     :type excludes: str
@@ -111,7 +121,7 @@ def start_tool(
 
     command = ["python", "ad_clicker.py"]
 
-    command.extend(["-q", query, "-p", proxy])
+    command.extend(["-q", query, "-p", proxy, "-l", str(max_scroll_limit)])
 
     if auth:
         command.append("--auth")
@@ -167,6 +177,7 @@ def main() -> None:
                     next(query),
                     next(proxy),
                     i * 0.5,
+                    args.max_scroll_limit,
                     args.auth,
                     args.excludes,
                     args.incognito,
@@ -195,6 +206,7 @@ def main() -> None:
                         query,
                         next(proxy),
                         i * 0.5,
+                        args.max_scroll_limit,
                         args.auth,
                         args.excludes,
                         args.incognito,
@@ -221,4 +233,3 @@ if __name__ == "__main__":
         logger.debug(f"Exception: {message}")
         details = traceback.format_tb(exp.__traceback__)
         logger.debug(f"Exception details: \n{''.join(details)}")
-

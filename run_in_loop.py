@@ -54,6 +54,13 @@ def get_arg_parser() -> ArgumentParser:
         help="Select a proxy from the given file",
     )
     arg_parser.add_argument(
+        "-l",
+        "--max_scroll_limit",
+        default=0,
+        type=int,
+        help="Number of maximum scrolls on the search results page",
+    )
+    arg_parser.add_argument(
         "-e",
         "--excludes",
         help="Exclude the ads that contain given words in url or title",
@@ -107,7 +114,9 @@ def main() -> None:
 
     command = ["python", "run_ad_clicker.py"]
 
-    command.extend(["-qf", args.query_file, "-pf", args.proxy_file])
+    command.extend(
+        ["-qf", args.query_file, "-pf", args.proxy_file, "-l", str(args.max_scroll_limit)]
+    )
 
     if args.auth:
         command.append("--auth")

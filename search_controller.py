@@ -46,8 +46,8 @@ class SearchController:
     :param driver: Selenium Chrome webdriver instance
     :type query: str
     :param query: Search query
-    :type ad_visit_time: int
-    :param ad_visit_time: Number of seconds to wait on the ad page
+    :type max_scroll_limit: int
+    :param max_scroll_limit: Number of maximum scrolls on the search results page
     :type excludes: str
     :param excludes: Words to exclude ads containing them in url or title
     """
@@ -63,10 +63,10 @@ class SearchController:
     AD_TITLE = (By.CSS_SELECTOR, "div[role='heading']")
 
     def __init__(
-        self, driver: selenium.webdriver, query: str, ad_visit_time: int, excludes: str = None
+        self, driver: selenium.webdriver, query: str, max_scroll_limit: int, excludes: str = None
     ) -> None:
         self._driver = driver
-        self._ad_visit_time = ad_visit_time
+        self._max_scroll_limit = max_scroll_limit
         self._search_query, self._filter_words = self._process_query(query)
         self._exclude_list = None
 
@@ -172,7 +172,7 @@ class SearchController:
                 for window_handle in self._driver.window_handles:
                     if window_handle != original_window_handle:
                         self._driver.switch_to.window(window_handle)
-                        sleep(self._ad_visit_time)
+                        sleep(random.choice(range(4, 9)))
 
                         logger.debug(f"Current url on new tab: {self._driver.current_url}")
 
@@ -220,6 +220,10 @@ class SearchController:
 
         ads = []
 
+        scroll_count = 0
+
+        logger.debug(f"Max scroll limit: {self._max_scroll_limit}")
+
         while not self._is_scroll_at_the_end():
             try:
                 top_ads_containers = self._driver.find_elements(*self.TOP_ADS_CONTAINER)
@@ -237,8 +241,14 @@ class SearchController:
             except NoSuchElementException:
                 logger.debug("Could not found bottom ads!")
 
+            if self._max_scroll_limit > 0 and scroll_count == self._max_scroll_limit:
+                logger.debug("Reached to max scroll limit! Ending scroll...")
+                break
+
             self._driver.find_element(By.TAG_NAME, "body").send_keys(Keys.PAGE_DOWN)
             sleep(2)
+
+            scroll_count += 1
 
         if not ads:
             return []

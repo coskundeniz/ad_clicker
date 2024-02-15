@@ -32,12 +32,11 @@ def get_arg_parser() -> ArgumentParser:
     arg_parser = ArgumentParser()
     arg_parser.add_argument("-q", "--query", help="Search query")
     arg_parser.add_argument(
-        "-t",
-        "--visittime",
-        default=4,
+        "-l",
+        "--max_scroll_limit",
+        default=0,
         type=int,
-        dest="ad_visit_time",
-        help="Number of seconds to wait on the ad page opened",
+        help="Number of maximum scrolls on the search results page",
     )
     arg_parser.add_argument("--headless", action="store_true", help="Use headless browser")
     arg_parser.add_argument(
@@ -100,6 +99,7 @@ def main():
 
     if args.poem:
         get_poem(args.poem)
+        raise SystemExit()
 
     if args.id:
         update_log_formats(args.id)
@@ -124,7 +124,9 @@ def main():
     search_controller = None
 
     try:
-        search_controller = SearchController(driver, args.query, args.ad_visit_time, args.excludes)
+        search_controller = SearchController(
+            driver, args.query, args.max_scroll_limit, args.excludes
+        )
         ads = search_controller.search_for_ads()
 
         if not ads:
