@@ -1,2 +1,2 @@
 selenium==4.16.0
-undetected-chromedriver==3.5.4
+undetected-chromedriver==3.5.5
