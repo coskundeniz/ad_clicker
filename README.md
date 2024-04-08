@@ -7,6 +7,14 @@ Old version of the tool can be found in the `old_version` branch.
 * Requires Python 3.9+
 * Requires Chrome latest version
 
+---
+
+> **If this repository reaches to 1024 ⭐, I will add one feature from premium according to poll results.**
+
+> [**VOTE HERE**](https://strawpoll.com/PbZqRzRWGyN)
+
+---
+
 [Related post on Medium](https://python.plainenglish.io/google-ads-clicker-with-python-selenium-and-tor-a6ff8078da2a)
 
 ## How to setup
@@ -205,5 +213,8 @@ otherwise you should give the full path.
 
 [https://coskundeniz.github.io/ad_clicker](https://coskundeniz.github.io/ad_clicker)
 
-If you benefit from this tool, please consider donating using the sponsor links.
+If you benefit from this tool, please consider donating using the sponsor links or following crypto addresses.
+
+* ETH: 0x461c1B3bd9c3E2d949C56670C088465Bf3457F4B
+* USDT: 0x1a4f06937100Dc704031386667D731Bea0670aaf
 
