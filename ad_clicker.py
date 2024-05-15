@@ -10,8 +10,11 @@ Birbiriyle konuşan iki insan
 """
 
 import random
+import shutil
+import string
 import traceback
 from argparse import ArgumentParser
+from pathlib import Path
 
 from config import logger, update_log_formats
 from proxy import get_proxies
@@ -119,7 +122,9 @@ def main():
     else:
         proxy = None
 
-    driver = create_webdriver(proxy, args.auth, args.headless, args.incognito)
+    plugin_folder_name = "".join(random.choices(string.ascii_lowercase, k=5))
+
+    driver = create_webdriver(proxy, args.auth, args.headless, args.incognito, plugin_folder_name)
 
     search_controller = None
 
@@ -148,6 +153,11 @@ def main():
     finally:
         if search_controller:
             search_controller.end_search()
+
+        if proxy and args.auth:
+            plugin_folder = Path.cwd() / "proxy_auth_plugin" / plugin_folder_name
+            logger.debug(f"Removing '{plugin_folder}' folder...")
+            shutil.rmtree(plugin_folder, ignore_errors=True)
 
 
 if __name__ == "__main__":

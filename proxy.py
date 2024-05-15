@@ -33,6 +33,8 @@ except ImportError:
 
     from selenium.webdriver import ChromeOptions
 
+from config import logger
+
 
 def get_proxies(proxy_file: Path) -> list[str]:
     """Get proxies from file
@@ -56,7 +58,12 @@ def get_proxies(proxy_file: Path) -> list[str]:
 
 
 def install_plugin(
-    chrome_options: ChromeOptions, proxy_host: str, proxy_port: int, username: str, password: str
+    chrome_options: ChromeOptions,
+    proxy_host: str,
+    proxy_port: int,
+    username: str,
+    password: str,
+    plugin_folder_name: str,
 ) -> None:
     """Install plugin on the fly for proxy authentication
 
@@ -70,6 +77,8 @@ def install_plugin(
     :param username: Proxy username
     :type password: str
     :param password: Proxy password
+    :type plugin_folder_name: str
+    :param plugin_folder_name: Plugin folder name for proxy
     """
 
     manifest_json = """
@@ -130,7 +139,12 @@ chrome.webRequest.onAuthRequired.addListener(
         password,
     )
 
-    plugin_folder = Path.cwd() / "proxy_auth_plugin"
+    plugins_folder = Path.cwd() / "proxy_auth_plugin"
+    plugins_folder.mkdir(exist_ok=True)
+
+    plugin_folder = plugins_folder / plugin_folder_name
+
+    logger.debug(f"Creating '{plugin_folder}' folder...")
     plugin_folder.mkdir(exist_ok=True)
 
     with open(plugin_folder / "manifest.json", "w") as manifest_file:
