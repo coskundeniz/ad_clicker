@@ -15,6 +15,10 @@ Old version of the tool can be found in the `old_version` branch.
 
 ---
 
+You can see the all premium features [here](https://www.adclicker.pro/#features).
+
+<br>
+
 [Related post on Medium](https://python.plainenglish.io/google-ads-clicker-with-python-selenium-and-tor-a6ff8078da2a)
 
 ## How to setup
