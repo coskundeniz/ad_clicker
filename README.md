@@ -2,6 +2,18 @@
 
 This command-line tool clicks ads for a certain query on Google search using [undetected_chromedriver](https://github.com/ultrafunkamsterdam/undetected-chromedriver) package. Supports proxy, running multiple simultaneous browsers, ad targeting/exclusion, and running in loop.
 
+## 📢 Premium Project Sale Announcement
+
+>> Premium project(Google + Bing) is for sale including the ownership of this repository which has the #1 place on all major search engines and drives most of the traffic,  and [adclicker.pro](http://adclicker.pro) domain.
+
+>> The buyer should preferably be a developer, software company, or someone willing to hire a developer(not me 🙂) for maintenance and further development.
+
+>> [Email me](mailto:coskun.denize@gmail.com) for details.
+
+---
+
+<br>
+
 Old version of the tool can be found in the `old_version` branch.
 
 * Requires Python 3.9+
