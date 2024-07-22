@@ -10,6 +10,7 @@ This command-line tool clicks ads for a certain query on Google search using [un
 
 >> [Email me](mailto:coskun.denize@gmail.com) for details.
 
+>> You can see the listing on Acquire [here](https://app.acquire.com/startup/panMXSoEHOUKYTRy2ruRUUUArBO2/cYtxwkAiZAQHAtDsKyo4).
 ---
 
 <br>
