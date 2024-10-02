@@ -2,33 +2,12 @@
 
 This command-line tool clicks ads for a certain query on Google search using [undetected_chromedriver](https://github.com/ultrafunkamsterdam/undetected-chromedriver) package. Supports proxy, running multiple simultaneous browsers, ad targeting/exclusion, and running in loop.
 
-## 📢 Premium Project Sale Announcement
-
->> Premium project(Google + Bing) is for sale including the ownership of this repository which has the #1 place on all major search engines and drives most of the traffic,  and [adclicker.pro](http://adclicker.pro) domain.
-
->> The buyer should preferably be a developer, software company, or someone willing to hire a developer(not me 🙂) for maintenance and further development.
-
->> [Email me](mailto:coskun.denize@gmail.com) for details.
-
->> You can see the listing on Acquire [here](https://app.acquire.com/startup/panMXSoEHOUKYTRy2ruRUUUArBO2/cYtxwkAiZAQHAtDsKyo4).
----
-
 <br>
 
 Old version of the tool can be found in the `old_version` branch.
 
-* Requires Python 3.9+
-* Requires Chrome latest version
-
----
-
-> **If this repository reaches to 1024 ⭐, I will add one feature from premium according to poll results.**
-
-> [**VOTE HERE**](https://strawpoll.com/PbZqRzRWGyN)
-
----
-
-You can see the all premium features [here](https://www.adclicker.pro/#features).
+* Requires Python 3.9 to 3.11
+* Requires the latest Chrome version
 
 <br>
 
@@ -230,7 +209,7 @@ otherwise you should give the full path.
 
 [https://coskundeniz.github.io/ad_clicker](https://coskundeniz.github.io/ad_clicker)
 
-If you benefit from this tool, please consider donating using the sponsor links or following crypto addresses.
+If you benefit from this tool, please consider donating using the sponsor links or the following crypto addresses.
 
 * ETH: 0x461c1B3bd9c3E2d949C56670C088465Bf3457F4B
 * USDT: 0x1a4f06937100Dc704031386667D731Bea0670aaf
