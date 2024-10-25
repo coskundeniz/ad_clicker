@@ -1,5 +1,9 @@
 # ad_clicker
 
+### Use [premium version](https://github.com/coskundeniz/google-ad-clicker-premium) for more features and better stability.
+
+---
+
 This command-line tool clicks ads for a certain query on Google search using [undetected_chromedriver](https://github.com/ultrafunkamsterdam/undetected-chromedriver) package. Supports proxy, running multiple simultaneous browsers, ad targeting/exclusion, and running in loop.
 
 > You can find the premium versions [here for Google](https://github.com/coskundeniz/google-ad-clicker-premium) and [here for Bing](https://github.com/coskundeniz/bing-ad-clicker-premium).
