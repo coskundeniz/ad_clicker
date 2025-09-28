@@ -1,6 +1,6 @@
 # ad_clicker
 
-### Use [premium version](https://github.com/coskundeniz/google-ad-clicker-premium) for more features and better stability.
+### Use [premium version](https://github.com/coskundeniz/google-ad-clicker-premium) for free for more features and better stability.
 
 ---
 
